@@ -31,6 +31,7 @@ Builds are published on the [releases page](https://github.com/serassstarry/Sery
 - Check for Updates, which can be enabled or disabled in settings
 - Export cached/downloaded media
 - Export settings
+- Automatic daily backup of the database to a folder of your choice
 - Plays music even with no internet connection
 - Fully featured in-app update checker and auto-update.²
 
@@ -59,6 +60,12 @@ Contributions are welcome! To develop new features or fix bugs, please fork the 
 
 Bugs and ideas go to the [issue tracker](https://github.com/serassstarry/SeryMusic/issues).
 
+
+## Publishing a release
+
+1. Add the repository secret `LOCAL_KEYSTORE` with the base64 of the keystore the app is signed with (once).
+2. Bump `versionCode` and `versionName` in `gradle/libs.versions.toml` and add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
+3. Push a tag named after the version, e.g. `v2.2.3`. The **Release** workflow builds `SeryMusic-release.apk` and attaches it to a new GitHub release, which the in-app updater picks up.
 
 # 🫂 Credits
 

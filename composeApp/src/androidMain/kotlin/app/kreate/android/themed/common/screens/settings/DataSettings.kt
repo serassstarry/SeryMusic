@@ -1,6 +1,12 @@
 package app.kreate.android.themed.common.screens.settings
 
 import android.content.Context
+import android.text.format.DateUtils
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.rememberCoroutineScope
+import app.kreate.android.service.AutoBackup
+import kotlinx.coroutines.launch
 import android.text.format.Formatter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -271,6 +277,56 @@ fun DataSettings( paddingValues: PaddingValues ) {
                     subtitle = stringResource(R.string.import_the_database),
                     onClick = importDatabase::onShortClick
                 )
+            }
+            entry( search, R.string.setting_entry_auto_backup ) {
+                val folder by Preferences.AUTO_BACKUP_FOLDER
+                val lastRun by Preferences.AUTO_BACKUP_LAST_RUN
+                val folderPicker = rememberLauncherForActivityResult(
+                    ActivityResultContracts.OpenDocumentTree()
+                ) { uri ->
+                    // `null` when user closes picker without choosing a folder
+                    uri ?: return@rememberLauncherForActivityResult
+
+                    AutoBackup.enable( uri )
+                }
+                val subtitle = if( folder.isBlank() )
+                    stringResource( R.string.setting_description_auto_backup_disabled )
+                else
+                    stringResource(
+                        R.string.setting_description_auto_backup_enabled,
+                        AutoBackup.folderName(),
+                        if( lastRun > 0 )
+                            DateUtils.getRelativeTimeSpanString( lastRun ).toString()
+                        else
+                            stringResource( R.string.word_never )
+                    )
+
+                SettingComponents.Text(
+                    title = stringResource( R.string.setting_entry_auto_backup ),
+                    subtitle = subtitle,
+                    onClick = { folderPicker.launch( null ) }
+                )
+
+                if( folder.isNotBlank() ) {
+                    val coroutineScope = rememberCoroutineScope()
+
+                    SettingComponents.Text(
+                        title = stringResource( R.string.setting_entry_auto_backup_now ),
+                        onClick = {
+                            coroutineScope.launch {
+                                AutoBackup.backupNow()
+                                          .onSuccess { Toaster.done() }
+                                          .onFailure {
+                                              Toaster.e( context.getString( R.string.error_auto_backup_failed, it.message.orEmpty() ) )
+                                          }
+                            }
+                        }
+                    )
+                    SettingComponents.Text(
+                        title = stringResource( R.string.setting_entry_auto_backup_disable ),
+                        onClick = AutoBackup::disable
+                    )
+                }
             }
             entry( search, R.string.store_settings_in_a_file ) {
                 val exportSettingsDialog = ExportSettingsDialog( context )

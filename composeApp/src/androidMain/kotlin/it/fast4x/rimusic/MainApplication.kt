@@ -8,6 +8,7 @@ import androidx.core.content.getSystemService
 import androidx.lifecycle.ProcessLifecycleOwner
 import app.kreate.android.Preferences
 import app.kreate.android.drawable.AppIcon
+import app.kreate.android.service.AutoBackup
 import app.kreate.android.service.innertube.InnertubeProvider
 import app.kreate.android.utils.ConnectivityUtils
 import app.kreate.android.utils.CrashHandler
@@ -63,6 +64,7 @@ class MainApplication : Application(), SingletonImageLoader.Factory {
         }
         // Register app lifecycle tracker
         ProcessLifecycleOwner.get().lifecycle.addObserver(AppLifecycleTracker)
+        ProcessLifecycleOwner.get().lifecycle.addObserver(AutoBackup)
     }
 
     override fun onTerminate() {

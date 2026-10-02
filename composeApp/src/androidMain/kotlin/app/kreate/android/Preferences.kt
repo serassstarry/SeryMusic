@@ -1067,6 +1067,16 @@ sealed class Preferences<T>(
         val LOCAL_SONGS_FOLDER by lazy {
             String( preferences, Key.LOCAL_SONGS_FOLDER, "defaultFolder", "/" )
         }
+        /**
+         * Uri of the folder (picked by user) to store automatic backups in,
+         * empty when feature is disabled.
+         */
+        val AUTO_BACKUP_FOLDER by lazy {
+            String( preferences, Key.AUTO_BACKUP_FOLDER, "", "" )
+        }
+        val AUTO_BACKUP_LAST_RUN by lazy {
+            Long( preferences, Key.AUTO_BACKUP_LAST_RUN, "", 0L )
+        }
         val SEEN_CHANGELOGS_VERSION by lazy {
             String( preferences, Key.SEEN_CHANGELOGS_VERSION, "seenChangelogsVersionKey", "" )
         }
@@ -2001,6 +2011,8 @@ sealed class Preferences<T>(
         const val IS_CONNECTION_METERED = "IsConnectionMetered"
         const val SMART_REWIND = "SmartRewind"
         const val LOCAL_SONGS_FOLDER = "LocalSongsFolder"
+        const val AUTO_BACKUP_FOLDER = "AutoBackupFolder"
+        const val AUTO_BACKUP_LAST_RUN = "AutoBackupLastRun"
         const val SEEN_CHANGELOGS_VERSION = "SeenChangelogsVersion"
         const val CUSTOM_COLOR = "CustomColorHashCode"
         const val SEARCH_RESULTS_TAB_INDEX = "SearchResultsTabIndex"

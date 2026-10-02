@@ -916,4 +916,11 @@
     <string name="word_pin">Fijar</string>
     <string name="word_unpin">Desfijar\n</string>
     <string name="success_playlist_deleted">Eliminada %s</string>
+    <string name="setting_entry_auto_backup">Copia de seguridad automática</string>
+    <string name="setting_description_auto_backup_disabled">Copia la base de datos una vez al día a la carpeta que elijas, se conserva aunque desinstales la app</string>
+    <string name="setting_description_auto_backup_enabled">Una vez al día en \"%1$s\". Última copia: %2$s</string>
+    <string name="setting_entry_auto_backup_now">Hacer copia ahora</string>
+    <string name="setting_entry_auto_backup_disable">Desactivar la copia automática</string>
+    <string name="word_never">nunca</string>
+    <string name="error_auto_backup_failed">La copia de seguridad automática ha fallado: %s</string>
 </resources>

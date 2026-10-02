@@ -185,11 +185,11 @@ object YTPlayerUtils : KoinComponent {
 
         // Debug uploaded track response
         if (isUploadedTrack || playlistId?.contains("MLPT") == true) {
-            println("[PLAYBACK_DEBUG] Main player response status: ${mainPlayerResponse.playabilityStatus.status}")
-            println("[PLAYBACK_DEBUG] Playability reason: ${mainPlayerResponse.playabilityStatus.reason}")
-            println("[PLAYBACK_DEBUG] Video details: title=${mainPlayerResponse.videoDetails?.title}, videoId=${mainPlayerResponse.videoDetails?.videoId}")
-            println("[PLAYBACK_DEBUG] Streaming data null? ${mainPlayerResponse.streamingData == null}")
-            println("[PLAYBACK_DEBUG] Adaptive formats count: ${mainPlayerResponse.streamingData?.adaptiveFormats?.size ?: 0}")
+            logger.d("Main player response status: ${mainPlayerResponse.playabilityStatus.status}")
+            logger.d("Playability reason: ${mainPlayerResponse.playabilityStatus.reason}")
+            logger.d("Video details: title=${mainPlayerResponse.videoDetails?.title}, videoId=${mainPlayerResponse.videoDetails?.videoId}")
+            logger.d("Streaming data null? ${mainPlayerResponse.streamingData == null}")
+            logger.d("Adaptive formats count: ${mainPlayerResponse.streamingData?.adaptiveFormats?.size ?: 0}")
         }
 
         var usedAgeRestrictedClient: YouTubeClient? = null
@@ -366,7 +366,6 @@ object YTPlayerUtils : KoinComponent {
                     try {
                         logger.d("Applying n-transform to stream URL...")
                         logger.d("  Original URL length: ${streamUrl.length}")
-                        logger.d("  Original URL preview: ${streamUrl.take(100)}...")
 
                         val originalUrl = streamUrl
                         // Use CipherDeobfuscator for n-transform (fixed implementation)
@@ -488,7 +487,7 @@ object YTPlayerUtils : KoinComponent {
         if (streamPlayerResponse == null) {
             logger.e("Bad stream player response - all clients failed")
             if (isUploadedTrack) {
-                println("[PLAYBACK_DEBUG] FAILURE: All clients failed for uploaded track videoId=$videoId")
+                logger.d("FAILURE: All clients failed for uploaded track videoId=$videoId")
             }
             throw Exception("Bad stream player response")
         }
@@ -499,7 +498,7 @@ object YTPlayerUtils : KoinComponent {
             // unavailable streams; Metrolist cannot recover those without official playback.
             logger.e("Playability status not OK: $errorReason")
             if (isUploadedTrack) {
-                println("[PLAYBACK_DEBUG] FAILURE: Playability not OK for uploaded track - status=${streamPlayerResponse.playabilityStatus.status}, reason=$errorReason")
+                logger.d("FAILURE: Playability not OK for uploaded track - status=${streamPlayerResponse.playabilityStatus.status}, reason=$errorReason")
             }
             throw PlaybackException(
                 errorReason,
@@ -525,7 +524,7 @@ object YTPlayerUtils : KoinComponent {
 
         logger.d("Successfully obtained playback data with format: ${format.mimeType}, bitrate: ${format.bitrate}")
         if (isUploadedTrack) {
-            println("[PLAYBACK_DEBUG] SUCCESS: Got playback data for uploaded track - format=${format.mimeType}, streamUrl=${streamUrl.take(100)}...")
+            logger.d("SUCCESS: Got playback data for uploaded track - format=${format.mimeType}")
         }
         PlaybackData(
             audioConfig,
@@ -537,8 +536,8 @@ object YTPlayerUtils : KoinComponent {
             streamClient = successClient ?: "unknown",
         )
     }.onFailure { e ->
-        println("[PLAYBACK_DEBUG] EXCEPTION during playback for videoId=$videoId: ${e::class.simpleName}: ${e.message}")
-        e.printStackTrace()
+        logger.d("EXCEPTION during playback for videoId=$videoId: ${e::class.simpleName}: ${e.message}")
+        logger.e("Failed to resolve stream of $videoId", e)
     }
     /**
      * Player response intended for metadata / playback-tracking retrieval.
@@ -659,7 +658,7 @@ object YTPlayerUtils : KoinComponent {
             // Add authentication cookie for privately owned tracks
             YouTube.cookie?.let { cookie ->
                 requestBuilder.addHeader("Cookie", cookie)
-                println("[PLAYBACK_DEBUG] Added cookie to validation request")
+                logger.d("Added cookie to validation request")
             }
 
             // Must be closed, otherwise each validation leaks a connection

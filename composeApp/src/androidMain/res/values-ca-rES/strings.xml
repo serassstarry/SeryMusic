@@ -916,4 +916,11 @@
     <string name="word_pin">Pin</string>
     <string name="word_unpin">Unpin\n</string>
     <string name="success_playlist_deleted">Deleted %s</string>
+    <string name="setting_entry_auto_backup">Còpia de seguretat automàtica</string>
+    <string name="setting_description_auto_backup_disabled">Copia la base de dades un cop al dia a la carpeta que triïs, es conserva encara que desinstal·lis l\'app</string>
+    <string name="setting_description_auto_backup_enabled">Un cop al dia a \"%1$s\". Última còpia: %2$s</string>
+    <string name="setting_entry_auto_backup_now">Fes la còpia ara</string>
+    <string name="setting_entry_auto_backup_disable">Desactiva la còpia automàtica</string>
+    <string name="word_never">mai</string>
+    <string name="error_auto_backup_failed">La còpia de seguretat automàtica ha fallat: %s</string>
 </resources>

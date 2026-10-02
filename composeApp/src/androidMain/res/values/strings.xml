@@ -916,4 +916,11 @@
     <string name="word_pin">Pin</string>
     <string name="word_unpin">Unpin\n</string>
     <string name="success_playlist_deleted">Deleted %s</string>
+    <string name="setting_entry_auto_backup">Automatic backup</string>
+    <string name="setting_description_auto_backup_disabled">Copy the database to a folder of your choice once a day, it survives uninstalling the app</string>
+    <string name="setting_description_auto_backup_enabled">Once a day to \"%1$s\". Last backup: %2$s</string>
+    <string name="setting_entry_auto_backup_now">Back up now</string>
+    <string name="setting_entry_auto_backup_disable">Turn off automatic backup</string>
+    <string name="word_never">never</string>
+    <string name="error_auto_backup_failed">Automatic backup failed: %s</string>
 </resources>
