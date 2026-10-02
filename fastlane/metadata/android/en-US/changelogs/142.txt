@@ -1,0 +1,10 @@
+First SeryMusic release
+
+New:
+- New name, icon and lilac theme
+- Automatic daily backup of the database to a folder of your choice
+- Data can be kept when uninstalling the app
+
+Fixes:
+- Playback recovers when YouTube rejects a stream (error 403)
+- Navigation arrows and highlights no longer show in red
