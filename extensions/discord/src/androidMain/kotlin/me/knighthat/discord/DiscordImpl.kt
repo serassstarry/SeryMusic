@@ -61,7 +61,7 @@ class DiscordImpl : Discord, KoinComponent {
         private const val TEMP_FILE_HOST = "https://litterbox.catbox.moe/resources/internals/api.php"
         private const val MAX_DIMENSION = 1024                           // Per Discord's guidelines
         private const val MAX_FILE_SIZE_BYTES = 2L * 1024 * 1024     // 2 MB in bytes
-        private const val KREATE_IMAGE_URL = "https://i.ibb.co/v4CzX3kT/discord-rpc-kreate.jpg"
+        private const val APP_IMAGE_URL = "https://i.ibb.co/v4CzX3kT/discord-rpc-kreate.jpg"
         private const val API_VERSION = "10"
 
         private val cachedExternalUrls = ConcurrentHashMap<String, String>()
@@ -208,7 +208,7 @@ class DiscordImpl : Discord, KoinComponent {
      * This function shouldn't be called anywhere other than initialization of [smallImage]
      */
     private fun getAppLogoUrl(): String? = runBlocking {
-        submitArtworkUrlToDiscord( KREATE_IMAGE_URL, APPLICATION_ID )
+        submitArtworkUrlToDiscord( APP_IMAGE_URL, APPLICATION_ID )
             .onSuccess {
                 logger.d { "Small image: $it" }
             }
@@ -297,14 +297,14 @@ class DiscordImpl : Discord, KoinComponent {
                 val session = _session.load() ?: throw SessionNotAvailableException()
                 val assets = makeAssets( song.thumbnailUrl, song.artistThumbnailUrl )
                 val activity = Activity(
-                    name = "Kreate",
+                    name = "SeryMusic",
                     state = song.artistName,
                     details = song.songName,
                     type = Type.LISTENING,
                     timestamps = Timestamps(song.timeStart + song.duration, song.timeStart),
                     assets = assets,
                     applicationId = APPLICATION_ID,
-                    url = "https://github.com/knighthat/Kreate"
+                    url = "https://github.com/serassstarry/SeryMusic"
                 )
                 val presence = Presence(listOf(activity), false)
 
@@ -344,14 +344,14 @@ class DiscordImpl : Discord, KoinComponent {
                 val session = _session.load() ?: throw SessionNotAvailableException()
                 val assets = makeAssets( song.thumbnailUrl, song.artistThumbnailUrl )
                 val activity = Activity(
-                    name = "Kreate",
+                    name = "SeryMusic",
                     state = "Pausing",
                     details = song.songName,
                     type = Type.LISTENING,
                     timestamps = Timestamps(null, song.timeStart),
                     assets = assets,
                     applicationId = APPLICATION_ID,
-                    url = "https://github.com/knighthat/Kreate"
+                    url = "https://github.com/serassstarry/SeryMusic"
                 )
                 val presence = Presence(listOf(activity), true, System.currentTimeMillis())
 
@@ -394,7 +394,7 @@ class DiscordImpl : Discord, KoinComponent {
                 )
                 val now = System.currentTimeMillis()
                 val activity = Activity(
-                    name = "Kreate",
+                    name = "SeryMusic",
                     details = "Music your way",
                     state = "Browsing",
                     type = Type.LISTENING,

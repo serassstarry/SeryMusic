@@ -2,21 +2,21 @@ package app.kreate.constant
 
 import app.kreate.component.Drawable
 import app.kreate.component.TextView
-import me.knighthat.kreate.composeapp.generated.resources.Res
-import me.knighthat.kreate.composeapp.generated.resources.artist
-import me.knighthat.kreate.composeapp.generated.resources.bookmark_stacks
-import me.knighthat.kreate.composeapp.generated.resources.calendar
-import me.knighthat.kreate.composeapp.generated.resources.clock_loader
-import me.knighthat.kreate.composeapp.generated.resources.cross_shuffle
-import me.knighthat.kreate.composeapp.generated.resources.sort_album_year
-import me.knighthat.kreate.composeapp.generated.resources.sort_artist
-import me.knighthat.kreate.composeapp.generated.resources.sort_date_added
-import me.knighthat.kreate.composeapp.generated.resources.sort_random
-import me.knighthat.kreate.composeapp.generated.resources.sort_songs_count
-import me.knighthat.kreate.composeapp.generated.resources.sort_title
-import me.knighthat.kreate.composeapp.generated.resources.sort_total_duration
-import me.knighthat.kreate.composeapp.generated.resources.title
-import me.knighthat.kreate.composeapp.generated.resources.year
+import com.serymusic.app.generated.resources.Res
+import com.serymusic.app.generated.resources.artist
+import com.serymusic.app.generated.resources.bookmark_stacks
+import com.serymusic.app.generated.resources.calendar
+import com.serymusic.app.generated.resources.clock_loader
+import com.serymusic.app.generated.resources.cross_shuffle
+import com.serymusic.app.generated.resources.sort_album_year
+import com.serymusic.app.generated.resources.sort_artist
+import com.serymusic.app.generated.resources.sort_date_added
+import com.serymusic.app.generated.resources.sort_random
+import com.serymusic.app.generated.resources.sort_songs_count
+import com.serymusic.app.generated.resources.sort_title
+import com.serymusic.app.generated.resources.sort_total_duration
+import com.serymusic.app.generated.resources.title
+import com.serymusic.app.generated.resources.year
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 

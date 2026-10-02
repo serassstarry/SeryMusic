@@ -19,25 +19,25 @@ val OPERATING_SYSTEM by lazy {
 }
 
 /**
- * Example: C:\Users\user\AppData\Roaming\Kreate
+ * Example: C:\Users\user\AppData\Roaming\SeryMusic
  */
 private fun getWindowsConfigPath(): Path {
     val roamingPath = System.getenv( "APPDATA" )
 
-    return Paths.get( roamingPath, "Kreate" )
+    return Paths.get( roamingPath, "SeryMusic" )
 }
 
 /**
- * Example: C:\Users\user\AppData\Roaming\Kreate
+ * Example: C:\Users\user\AppData\Roaming\SeryMusic
  */
 private fun getWindowsCachePath(): Path {
     val roamingPath = System.getenv( "LOCALAPPDATA" )
 
-    return Paths.get( roamingPath, "Kreate" )
+    return Paths.get( roamingPath, "SeryMusic" )
 }
 
 /**
- * Example: /home/user/.config/Kreate
+ * Example: /home/user/.config/SeryMusic
  *
  * Or whatever `XDG_CONFIG_HOME` is set to
  */
@@ -46,11 +46,11 @@ private fun getLinuxXdgConfigPath(): Path {
     val configDir = System.getenv( "XDG_CONFIG_HOME" )
         ?: Paths.get( homeDir, ".config" ).toString()
 
-    return Paths.get( configDir, "Kreate" )
+    return Paths.get( configDir, "SeryMusic" )
 }
 
 /**
- * Example: /home/user/.local/share/Kreate
+ * Example: /home/user/.local/share/SeryMusic
  *
  * Or whatever `XDG_DATA_HOME` is set to
  */
@@ -59,11 +59,11 @@ private fun getLinuxXdgDataPath(): Path {
     val configDir = System.getenv( "XDG_DATA_HOME" )
         ?: Paths.get( homeDir, ".local/share" ).toString()
 
-    return Paths.get( configDir, "Kreate" )
+    return Paths.get( configDir, "SeryMusic" )
 }
 
 /**
- * Example: /home/user/.local/share/Kreate
+ * Example: /home/user/.local/share/SeryMusic
  *
  * Or whatever `XDG_DATA_HOME` is set to
  */
@@ -72,27 +72,27 @@ private fun getLinuxXdgCachePath(): Path {
     val configDir = System.getenv( "XDG_CACHE_HOME" )
         ?: Paths.get( homeDir, ".cache" ).toString()
 
-    return Paths.get( configDir, "Kreate" )
+    return Paths.get( configDir, "SeryMusic" )
 }
 
 /**
- * Example: /Users/user/Library/Application Support/Kreate
+ * Example: /Users/user/Library/Application Support/SeryMusic
  */
 private fun getMacOsConfigPath(): Path {
     val homeDir = System.getProperty( "user.home" )
     val libraryBase = Paths.get( homeDir, "Library" )
 
-    return Paths.get( libraryBase.toString(), "Application Support", "Kreate" )
+    return Paths.get( libraryBase.toString(), "Application Support", "SeryMusic" )
 }
 
 /**
- * Example: /Users/user/Library/Application Support/Kreate
+ * Example: /Users/user/Library/Application Support/SeryMusic
  */
 private fun getMacOsCachePath(): Path {
     val homeDir = System.getProperty( "user.home" )
     val libraryBase = Paths.get( homeDir, "Library" )
 
-    return Paths.get( libraryBase.toString(), "Caches", "Kreate" )
+    return Paths.get( libraryBase.toString(), "Caches", "SeryMusic" )
 }
 
 @Throws(IllegalStateException::class)

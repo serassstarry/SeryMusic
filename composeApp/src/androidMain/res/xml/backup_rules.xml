@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Android 11 and older. Songs (downloads & cache) are excluded because
+    they exceed the 25MB quota, which makes the whole backup fail and
+    database (favorites, playlists) and settings are lost with it.
+-->
+<full-backup-content>
+    <exclude domain="file" path="exo_downloads/" />
+    <exclude domain="file" path="exo_cache/" />
+    <exclude domain="file" path="cipher_cache/" />
+    <exclude domain="database" path="exoplayer_internal.db" />
+    <exclude domain="database" path="exoplayer_internal.db-shm" />
+    <exclude domain="database" path="exoplayer_internal.db-wal" />
+</full-backup-content>

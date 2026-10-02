@@ -7,7 +7,7 @@
         android:shortcutShortLabel="@android:string/search_go">
         <intent
             android:targetClass="it.fast4x.rimusic.MainActivity"
-            android:targetPackage="me.knighthat.kreate.debug"
+            android:targetPackage="com.serymusic.app.debug"
             android:action="it.fast4x.rimusic.action.search" />
     </shortcut>
     <shortcut
@@ -17,7 +17,7 @@
         android:shortcutShortLabel="@string/copy_crash_log_to_clipboard">
         <intent
             android:targetClass="app.kreate.android.CopyCrashlogActivity"
-            android:targetPackage="me.knighthat.kreate.debug"
+            android:targetPackage="com.serymusic.app.debug"
             android:action="COPY_CRASH_LOG" />
     </shortcut>
     <shortcut
@@ -27,7 +27,7 @@
             android:shortcutShortLabel="@string/delete_databases">
         <intent
                 android:targetClass="app.kreate.android.DeleteDatabasesActivity"
-                android:targetPackage="me.knighthat.kreate.debug"
+                android:targetPackage="com.serymusic.app.debug"
                 android:action="DELETE_DATABASES" />
     </shortcut>
 </shortcuts>

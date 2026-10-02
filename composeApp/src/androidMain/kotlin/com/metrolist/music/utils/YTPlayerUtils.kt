@@ -466,6 +466,7 @@ object YTPlayerUtils : KoinComponent {
                     logger.d("Stream validated successfully with client: ${currentClient.clientName}")
                     // Log for release builds
                     logger.i("Playback: client=${currentClient.clientName}, videoId=$videoId")
+                    successClient = currentClient.clientName
                     break
                 } else {
                     logger.d("Stream validation failed for client: ${currentClient.clientName}")
@@ -661,10 +662,12 @@ object YTPlayerUtils : KoinComponent {
                 println("[PLAYBACK_DEBUG] Added cookie to validation request")
             }
 
-            val response = httpClient.newCall(requestBuilder.build()).execute()
-            val isSuccessful = response.isSuccessful
-            logger.d("Stream URL validation result: ${if (isSuccessful) "Success" else "Failed"} (${response.code})")
-            return isSuccessful
+            // Must be closed, otherwise each validation leaks a connection
+            httpClient.newCall(requestBuilder.build()).execute().use { response ->
+                val isSuccessful = response.isSuccessful
+                logger.d("Stream URL validation result: ${if (isSuccessful) "Success" else "Failed"} (${response.code})")
+                return isSuccessful
+            }
         } catch (e: Exception) {
             logger.e("Stream URL validation failed with exception", e)
         }

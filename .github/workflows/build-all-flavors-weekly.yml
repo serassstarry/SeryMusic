@@ -127,20 +127,20 @@ jobs:
     strategy:
       matrix:
         platform: [ 'Github' ]
-        # Kreate-release.apk
-        # Kreate-arm64.apk
-        # Kreate-arm32.apk
-        # Kreate-x86.apk
-        # Kreate-x86_64.apk
+        # SeryMusic-release.apk
+        # SeryMusic-arm64.apk
+        # SeryMusic-arm32.apk
+        # SeryMusic-x86.apk
+        # SeryMusic-x86_64.apk
         architect: [ 'Universal', 'Arm64', 'Arm32', 'X86', 'X86_64' ]
         type: [ 'Release' ]
         include:
-          # Kreate-izzy.apk
+          # SeryMusic-izzy.apk
           - platform: Izzy
             architect: Universal
             type: Release
 
-          # Kreate-uncompressed.apk
+          # SeryMusic-uncompressed.apk
           - platform: Github
             architect: Universal
             type: Uncompressed
@@ -148,9 +148,9 @@ jobs:
     steps:
       # Checkout is placed before reverting keystore because in read
       # GitHub Action env, the repo gets cloned into another folder
-      # i.e /home/runner/work/Kreate/Kreate
+      # i.e /home/runner/work/SeryMusic/SeryMusic
       # Without cloning first, the keystore will be placed in
-      # /home/runner/work/Kreate/.ignore.d/keystores/production.jks
+      # /home/runner/work/SeryMusic/.ignore.d/keystores/production.jks
       # Which will unintentionally make the build process fail because it
       # can't find the keystore to sign the apk
       - uses: actions/checkout@v7

@@ -837,7 +837,7 @@ sealed class Preferences<T>(
             Enum( preferences, Key.MAIN_THEME, "UiType", UiType.RiMusic )
         }
         val COLOR_PALETTE by lazy {
-            Enum( preferences, Key.COLOR_PALETTE, "colorPaletteName", ColorPaletteName.Dynamic )
+            Enum( preferences, Key.COLOR_PALETTE, "colorPaletteName", ColorPaletteName.Default )
         }
         val THEME_MODE by lazy {
             Enum( preferences, Key.THEME_MODE, "colorPaletteMode", ColorPaletteMode.Dark )
@@ -1071,7 +1071,7 @@ sealed class Preferences<T>(
             String( preferences, Key.SEEN_CHANGELOGS_VERSION, "seenChangelogsVersionKey", "" )
         }
         val CUSTOM_COLOR by lazy {
-            Color(preferences, Key.CUSTOM_COLOR, "customColor", androidx.compose.ui.graphics.Color.Green)
+            Color(preferences, Key.CUSTOM_COLOR, "customColor", androidx.compose.ui.graphics.Color(0xff8b5cf6))
         }
         val SEARCH_RESULTS_TAB_INDEX by lazy {
             Int( preferences, Key.SEARCH_RESULTS_TAB_INDEX, "searchResultScreenTabIndex", 0 )

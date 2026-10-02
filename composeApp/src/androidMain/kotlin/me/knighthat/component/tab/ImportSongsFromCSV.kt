@@ -60,7 +60,7 @@ class ImportSongsFromCSV(
                       }
                       .fastMap { row ->      // Experimental, revert back to [map] if needed
 
-                          // Previous version of Kreate uses "PlaylistBrowseId" as playlistId,
+                          // Previous version of SeryMusic uses "PlaylistBrowseId" as playlistId,
                           // this is wrong and must be correct to empty string before inserting
                           // to the database
                           var browseId = row["PlaylistBrowseId"].orEmpty()
@@ -68,7 +68,7 @@ class ImportSongsFromCSV(
                               browseId = ""
 
                           // For backward compatibility, RiMusic exports duration
-                          // in human-readable format "00:00" while Kreate exports
+                          // in human-readable format "00:00" while SeryMusic exports
                           // in seconds.
                           val rawDuration = row["Duration"].orEmpty()
                           val convertedDuration =

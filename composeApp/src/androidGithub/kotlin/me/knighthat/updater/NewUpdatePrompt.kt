@@ -130,7 +130,7 @@ object NewUpdatePrompt: InteractiveDialog {
                 errorMessage = context.getString( R.string.error_download_manager_init_failed )
                 return@Action
             }
-            // Saved to user's Android/data/me.knighthat.kreate(.debug)/Kreate-<buildType>.apk
+            // Saved to user's Android/data/com.serymusic.app(.debug)/SeryMusic-<buildType>.apk
             val apkFile = File(
                 context.getExternalFilesDir( Environment.DIRECTORY_DOWNLOADS ),
                 Updater.build.name

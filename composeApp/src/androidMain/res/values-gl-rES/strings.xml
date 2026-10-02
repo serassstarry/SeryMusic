@@ -690,7 +690,7 @@
     <string name="settings_audio_focus_info">Permite pausar e recomezar a reprodución de forma automática despois dunha chamada, por exemplo</string>
     <string name="songs_liked_yt">A(s) canción(s) foi/foron marcada(s) como Gústame en YouTube</string>
     <string name="song_unliked_yt">A canción está marcada como non me gusta no YouTube</string>
-    <string name="add_rimusic_to_ytm_favorites">Me gusta no Kreate significa darlle a Gústame ás cancións en YouTube</string>
+    <string name="add_rimusic_to_ytm_favorites">Me gusta no SeryMusic significa darlle a Gústame ás cancións en YouTube</string>
     <string name="songs_liked_yt_failed">Erro ao marcar a canción como gústame no YouTube</string>
     <string name="songs_unliked_yt_failed">Erro ao marcar a canción como non me gusta no YouTube</string>
     <string name="adding_yt_to_pl_failed">Produciuse un erro cas vindeiras 50 cancións. Engadindo as cancións á lista de reprodución unha a unha</string>

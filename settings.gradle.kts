@@ -17,7 +17,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Kreate"
+rootProject.name = "SeryMusic"
 include(":composeApp")
 // Projects from extensions
 include(":oldtube")

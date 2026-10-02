@@ -65,7 +65,7 @@ private const val METHOD_IOS = 2
  * This is created to reduce load to Room
  */
 private val justInserted = AtomicReference("")
-private val cachedStreamUrl = ConcurrentHashMap<String, YTPlayerUtils.PlaybackData>()
+private val cachedStreamUrl = ConcurrentHashMap<String, CachedStream>()
 private val logger = Logger.withTag("dataspec")
 private val jsonParser =
     Json {
@@ -302,18 +302,17 @@ private fun getPlayableUrl( songId: String ): YTPlayerUtils.PlaybackData = runBl
         CipherDeobfuscator.initialize( get(Context::class.java) )
 
     val cache: YTPlayerUtils.PlaybackData
-    if( cachedStreamUrl.contains(songId) ) {
-        cache = cachedStreamUrl[songId]!!
-        // Handle expired url with 30secs offset
-        val remainingSeconds = cache.streamExpiresInSeconds.seconds - 30.seconds
-        if( remainingSeconds.inWholeMilliseconds <= System.currentTimeMillis() ) {
-            logger.d { "Cached stream url of $songId expired" }
-
-            cachedStreamUrl.remove( songId )
-            return@runBlocking getPlayableUrl( songId )
-        } else
-            logger.d { "Stream url of $songId is cached" }
+    val cached = cachedStreamUrl[songId]
+    // Handle expired url with 30secs offset
+    if( cached != null && System.currentTimeMillis() < cached.expiresAtMillis - 30.seconds.inWholeMilliseconds ) {
+        logger.d { "Stream url of $songId is cached" }
+        cache = cached.data
     } else {
+        if( cached != null ) {
+            logger.d { "Cached stream url of $songId expired" }
+            cachedStreamUrl.remove( songId )
+        }
+
         if( YouTube.visitorData == null )
             YouTube.visitorData()
                    .onFailure { err ->
@@ -333,7 +332,10 @@ private fun getPlayableUrl( songId: String ): YTPlayerUtils.PlaybackData = runBl
             audioQuality = audioQuality,
             connectivityManager = connManager
         ).getOrThrow()
-        cachedStreamUrl[songId] = cache
+        cachedStreamUrl[songId] = CachedStream(
+            cache,
+            System.currentTimeMillis() + cache.streamExpiresInSeconds.seconds.inWholeMilliseconds
+        )
     }
 
     cache
@@ -369,4 +371,9 @@ private data class StreamCache(
     val contentLength: Long,
     val playableUrl: String,
     val expiredTimeMillis: Long
+)
+
+private data class CachedStream(
+    val data: YTPlayerUtils.PlaybackData,
+    val expiresAtMillis: Long
 )

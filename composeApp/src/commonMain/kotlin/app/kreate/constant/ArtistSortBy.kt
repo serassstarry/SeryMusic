@@ -2,13 +2,13 @@ package app.kreate.constant
 
 import app.kreate.component.Drawable
 import app.kreate.component.TextView
-import me.knighthat.kreate.composeapp.generated.resources.Res
-import me.knighthat.kreate.composeapp.generated.resources.calendar
-import me.knighthat.kreate.composeapp.generated.resources.cross_shuffle
-import me.knighthat.kreate.composeapp.generated.resources.sort_date_added
-import me.knighthat.kreate.composeapp.generated.resources.sort_random
-import me.knighthat.kreate.composeapp.generated.resources.sort_title
-import me.knighthat.kreate.composeapp.generated.resources.title
+import com.serymusic.app.generated.resources.Res
+import com.serymusic.app.generated.resources.calendar
+import com.serymusic.app.generated.resources.cross_shuffle
+import com.serymusic.app.generated.resources.sort_date_added
+import com.serymusic.app.generated.resources.sort_random
+import com.serymusic.app.generated.resources.sort_title
+import com.serymusic.app.generated.resources.title
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.StringResource
 

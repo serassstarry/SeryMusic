@@ -22,6 +22,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import app.kreate.android.BuildConfig
 import app.kreate.android.R
 import app.kreate.android.drawable.AppIcon
 import it.fast4x.rimusic.colorPalette
@@ -83,12 +84,10 @@ private fun AppLogo(
 
 @Composable
 private fun AppLogoText( navController: NavController ) {
-    Button(
-        iconId = R.drawable.app_logo_text,
-        color = AppBar.contentColor(),
-        padding = 0.dp,
-        size = 36.dp,
-        forceWidth = 100.dp,
+    BasicText(
+        text = BuildConfig.APP_NAME,
+        style = typography().l.semiBold.copy( color = AppBar.contentColor() ),
+        maxLines = 1,
         modifier = Modifier.clickable {
             if ( NavRoutes.home.isHere( navController ) ) return@clickable
 
@@ -102,7 +101,7 @@ private fun AppLogoText( navController: NavController ) {
                 launchSingleTop = true
             }
         }
-    ).Draw()
+    )
 }
 
 // START

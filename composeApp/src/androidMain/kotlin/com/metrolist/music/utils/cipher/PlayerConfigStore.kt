@@ -1,7 +1,6 @@
 package com.metrolist.music.utils.cipher
 
 import android.content.Context
-import android.util.Base64
 import co.touchlab.kermit.Logger
 import com.metrolist.innertube.YouTube
 import com.metrolist.music.utils.cipher.PlayerConfigStore.applyCachedOverlay
@@ -18,7 +17,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
-import java.nio.charset.StandardCharsets
 
 /**
  * Owns the player-config table at runtime: bundled asset as the offline default, overlaid
@@ -34,10 +32,14 @@ object PlayerConfigStore {
     private const val ASSET_NAME = "player_configs.json"
 
     private val logger = Logger.withTag(TAG)
-    private val REMOTE_URL by lazy {
-        val encoded = "aHR0cHM6Ly9yYXcuZ2l0aHVidXNlcmNvbnRlbnQuY29tL01ldHJvbGlzdEdyb3VwL01ldHJvbGlzdC9tYWluL2FwcC9zcmMvbWFpbi9hc3NldHMvcGxheWVyX2NvbmZpZ3MuanNvbg=="
-        String(Base64.decode(encoded, Base64.DEFAULT), StandardCharsets.UTF_8)
-    }
+    // The old location (Metrolist/main/app/src/main/assets/player_configs.json) was deleted
+    // upstream on 2026-08-25 and now 404s, which froze the table on the bundled asset and broke
+    // deciphering as soon as YouTube rotated to a player missing from it. Tried in order: the
+    // registry Metrolist moved to, then the original upstream it mirrors.
+    private val REMOTE_URLS = listOf(
+        "https://raw.githubusercontent.com/MetrolistGroup/faraday/master/registry/player_configs.json",
+        "https://raw.githubusercontent.com/ZemerTeam/zemer-cipher/master/library/src/main/assets/player_configs.json",
+    )
 
     // Mirrors PlayerJsFetcher.CACHE_TTL_MS.
     private const val REFRESH_TTL_MS = 6 * 60 * 60 * 1000L
@@ -250,13 +252,26 @@ object PlayerConfigStore {
      * HTTP error (including the 404 served until the file lands on the repo's default
      * branch), network exception, or validation failure — keeps the previous map and cache.
      * lastFetchMs is only advanced on 200/304 so transient failures retry on the next trigger.
+     * Each of [REMOTE_URLS] is tried in order until one answers 200/304 with a valid table.
      */
     private fun fetchAndApply(): Boolean {
         lastAttemptReachedServer = false
+        for (url in REMOTE_URLS) {
+            fetchAndApplyFrom(url)?.let { return it }
+        }
+        logger.w("All remote config sources failed — keeping previous configs")
+        return false
+    }
+
+    /**
+     * Returns whether the table changed, or `null` when [url] failed and the next source
+     * should be tried.
+     */
+    private fun fetchAndApplyFrom(url: String): Boolean? {
         try {
             val etag = readMeta()?.first
             val request = Request.Builder()
-                .url(REMOTE_URL)
+                .url(url)
                 .header("User-Agent", "Mozilla/5.0")
                 .apply { if (!etag.isNullOrEmpty()) header("If-None-Match", etag) }
                 .build()
@@ -264,25 +279,25 @@ object PlayerConfigStore {
             httpClient.newCall(request).execute().use { response ->
                 lastAttemptReachedServer = true
                 if (response.code == 304) {
-                    logger.d("Remote configs unchanged (304)")
+                    logger.d("Remote configs unchanged (304) from $url")
                     writeMeta(etag.orEmpty(), System.currentTimeMillis())
                     return false
                 }
                 if (!response.isSuccessful) {
-                    logger.w("Remote config fetch HTTP ${response.code} — keeping previous configs")
-                    return false
+                    logger.w("Remote config fetch HTTP ${response.code} from $url")
+                    return null
                 }
 
                 val body = response.body?.string()
                 if (body.isNullOrEmpty()) {
-                    logger.w("Remote config fetch returned empty body — keeping previous configs")
-                    return false
+                    logger.w("Remote config fetch returned empty body from $url")
+                    return null
                 }
 
                 val remote = when (val result = PlayerConfigParser.parse(body)) {
                     is PlayerConfigParser.ParseResult.Failure -> {
-                        logger.w("Remote configs rejected: ${result.reason} — keeping previous configs")
-                        return false
+                        logger.w("Remote configs from $url rejected: ${result.reason}")
+                        return null
                     }
                     is PlayerConfigParser.ParseResult.Success -> {
                         if (result.skippedEntries.isNotEmpty()) {
@@ -295,8 +310,8 @@ object PlayerConfigStore {
                 return applyRemote(remote, body, response.header("ETag").orEmpty())
             }
         } catch (e: Exception) {
-            logger.w("Remote config fetch failed: ${e.message} — keeping previous configs", e)
-            return false
+            logger.w("Remote config fetch from $url failed: ${e.message}", e)
+            return null
         }
     }
 

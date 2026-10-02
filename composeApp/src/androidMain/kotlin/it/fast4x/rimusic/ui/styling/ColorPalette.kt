@@ -57,32 +57,33 @@ data class ColorPalette(
 
 
 
+// Greys & lilacs from the "serass" preset of Serass Chat
 val DefaultDarkColorPalette = ColorPalette(
-    background0 = Color(0xff16171d),
-    background1 = Color(0xff1f2029),
-    background2 = Color(0xff2b2d3b),
-    background3 = Color(0xff495057),
-    background4 = Color(0xff333333),
-    text = Color(0xffe1e1e2),
-    textSecondary = Color(0xffa3a4a6),
-    textDisabled = Color(0xff6f6f73),
-    iconButtonPlayer = Color(0xffe1e1e2),
-    accent = Color(0xFF2b9348),
+    background0 = Color(0xff0c0c10),
+    background1 = Color(0xff17171d),
+    background2 = Color(0xff22222b),
+    background3 = Color(0xff3a3a46),
+    background4 = Color(0xff2a2a33),
+    text = Color(0xffededf2),
+    textSecondary = Color(0xffa3a3b2),
+    textDisabled = Color(0xff67676f),
+    iconButtonPlayer = Color(0xffededf2),
+    accent = Color(0xff8b5cf6),
     onAccent = Color.White,
     isDark = true
 )
 
 val DefaultLightColorPalette = ColorPalette(
-    background0 = Color(0xfffdfdfe),
-    background1 = Color(0xfff8f8fc),
-    background2 = Color(0xffeaeaf5),
-    background3 = Color(0xffeaeafd),
-    background4 = Color(0xffeaeafd),
-    text = Color(0xff212121),
-    textSecondary = Color(0xff656566),
-    textDisabled = Color(0xff9d9d9d),
-    iconButtonPlayer = Color(0xff212121),
-    accent = Color(0xFF2b9348),
+    background0 = Color(0xffffffff),
+    background1 = Color(0xfff6f6f8),
+    background2 = Color(0xffeeeef2),
+    background3 = Color(0xffe6e0f8),
+    background4 = Color(0xffe6e0f8),
+    text = Color(0xff1b1b22),
+    textSecondary = Color(0xff55555f),
+    textDisabled = Color(0xff8a8a94),
+    iconButtonPlayer = Color(0xff1b1b22),
+    accent = Color(0xff8b5cf6),
     onAccent = Color.White,
     isDark = false
 )
@@ -235,8 +236,10 @@ inline val ColorPalette.collapsedPlayerProgressBar: Color
 
 
 
+// Also tints navigation arrows, search icons, dialogs, etc. Only [PureBlackColorPalette]
+// keeps red because its accent is white.
 inline val ColorPalette.favoritesIcon: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
+    get() = if (this === PureBlackColorPalette) {
         red
     } else {
         accent
@@ -258,7 +261,7 @@ inline val ColorPalette.primaryButton: Color
 
 
 inline val ColorPalette.favoritesOverlay: Color
-    get() = if (this === DefaultDarkColorPalette || this === DefaultLightColorPalette || this === PureBlackColorPalette) {
+    get() = if (this === PureBlackColorPalette) {
         red.copy(alpha = 0.4f)
     } else {
         accent.copy(alpha = 0.4f)

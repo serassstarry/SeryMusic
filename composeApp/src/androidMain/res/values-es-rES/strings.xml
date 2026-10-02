@@ -690,7 +690,7 @@
     <string name="settings_audio_focus_info">Permite pausar y reanudar la reproducción automáticamente después de una llamada, por ejemplo</string>
     <string name="songs_liked_yt">Canción/canciones que tienen me gusta en YouTube</string>
     <string name="song_unliked_yt">La canción tiene un no me gusta en YouTube</string>
-    <string name="add_rimusic_to_ytm_favorites">Dar Me gusta en YouTube a las canciones favoritas en Kreate</string>
+    <string name="add_rimusic_to_ytm_favorites">Dar Me gusta en YouTube a las canciones favoritas en SeryMusic</string>
     <string name="songs_liked_yt_failed">Error al dar un me gusta a la canción en YouTube</string>
     <string name="songs_unliked_yt_failed">Error al dar un no me gusta a la canción en YouTube</string>
     <string name="adding_yt_to_pl_failed">Se ha producido un error en las siguientes 50 canciones. Añadiendo canciones a la lista de reproducción una a una</string>

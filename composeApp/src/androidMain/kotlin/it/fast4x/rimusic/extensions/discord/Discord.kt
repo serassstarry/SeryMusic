@@ -34,7 +34,7 @@ fun DiscordLoginAndGetToken( discord: Discord, onDone: () -> Unit ) {
     var webView: WebView? = null
 
     // This section is ripped from Metrolist - Full credit to their team
-    // Small changes were made in order to make it work with Kreate
+    // Small changes were made in order to make it work with SeryMusic
     // https://github.com/mostafaalagamy/Metrolist/blob/main/app/src/main/kotlin/com/metrolist/music/ui/screens/settings/DiscordLoginScreen.kt
     AndroidView(
         modifier = Modifier.windowInsetsPadding( LocalPlayerAwareWindowInsets.current )

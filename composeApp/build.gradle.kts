@@ -8,7 +8,7 @@ import java.security.MessageDigest
 import java.text.SimpleDateFormat
 import java.util.Date
 
-val APP_NAME = "Kreate"
+val APP_NAME = "SeryMusic"
 
 private fun String.sha256(): String {
     val digest = MessageDigest.getInstance( "SHA-256" )
@@ -18,11 +18,12 @@ private fun String.sha256(): String {
 }
 
 // Please DO NOT change this, it's intended to differentiate between
-// knighthat/Kreate's build env and others' build env.
+// upstream official build env and others' build env.
 // Only official build env has passwords and keystore to sign the APK
 // Other build environments can have unsigned version instead
 val officialBuildPhrase: String? = System.getenv( "OFFICIAL_BUILD_PASSPHRASE" )
 val isOfficialBuildEnv = !officialBuildPhrase.isNullOrBlank() && officialBuildPhrase.sha256() == "b2c778240e03b2005d23899aa02e51de049223a54d549d082e89dc20e51dd545"
+val localKeystore = file( "$rootDir/.ignore.d/keystores/local.keystore" )
 
 plugins {
     // Multiplatform
@@ -182,7 +183,7 @@ android {
     compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
-        applicationId = "me.knighthat.kreate"
+        applicationId = "com.serymusic.app"
         minSdk = libs.versions.minSdk.get().toInt()
         targetSdk = libs.versions.compileSdk.get().toInt()
 
@@ -201,6 +202,15 @@ android {
             storePassword = System.getenv( "STORE_PASSWORD" )
             keyPassword = System.getenv( "KEY_PASSWORD" )
         }
+        // Fixed copy of the key local builds are signed with. Android only installs an update
+        // over existing data when it's signed with the same key, keep a backup of this file.
+        if( localKeystore.exists() )
+            create( "local" ) {
+                storeFile = localKeystore
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
         create( "nightly" ) {
             storeFile = file("$rootDir/.ignore.d/keystores/nightly.jks")
             keyAlias = "nightly"
@@ -321,9 +331,11 @@ android {
 
             isDefault = true
 
-            if( isOfficialBuildEnv )
-                // Singing config
-                signingConfig = signingConfigs.getByName( "production" )
+            signingConfig = if( isOfficialBuildEnv )
+                signingConfigs.getByName( "production" )
+            else
+                // Sign local builds with the debug key so the release APK is installable
+                signingConfigs.findByName( "local" ) ?: signingConfigs.getByName( "debug" )
 
             // App's properties
             versionName = libs.versions.versionName.get()
@@ -382,7 +394,7 @@ compose.desktop {
 
         //conveyor
         version = "0.0.1"
-        group = "me.knighthat.kreate"
+        group = "com.serymusic.app"
 
         //jpackage
         nativeDistributions {
@@ -400,6 +412,7 @@ compose.desktop {
 compose.resources {
     publicResClass = true
     generateResClass = always
+    packageOfResClass = "com.serymusic.app.generated.resources"
 }
 
 room {

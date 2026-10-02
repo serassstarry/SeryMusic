@@ -30,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -308,8 +307,7 @@ fun Thumbnail(
 
                     } else {
                         Image(
-                            painter = painterResource(R.drawable.ic_banner_foreground),
-                            colorFilter = ColorFilter.tint(colorPalette().accent),
+                            painter = painterResource(R.drawable.sery_logo),
                             modifier = Modifier
                                 .pointerInput(Unit) {
                                     detectTapGestures(

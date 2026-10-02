@@ -40,8 +40,8 @@ object Updater : KoinComponent {
     private fun extractBuild( assets: List<GithubRelease.Build> ): GithubRelease.Build {
         val filename = getFileName()
         return assets.fastFirstOrNull {
-            // Get the first build that has name matches 'Kreate-<buildType>.apk'
-            // with the exception of nightly build, which is `Kreate-nightly.apk`
+            // Get the first build that has name matches 'SeryMusic-<buildType>.apk'
+            // with the exception of nightly build, which is `SeryMusic-nightly.apk`
             it.name == filename
         } ?: throw NoSuchFileException(filename)
     }
@@ -57,7 +57,7 @@ object Updater : KoinComponent {
      */
     @Throws(ResponseException::class, SerializationException::class)
     private suspend fun getLatestRelease(): GithubRelease {
-        // https://api.github.com/repos/knighthat/Kreate/releases/latest
+        // https://api.github.com/repos/serassstarry/SeryMusic/releases/latest
         val url = "${Repository.GITHUB_API}/repos/${Repository.LATEST_TAG_URL}"
 
         return client.get( url )
@@ -72,7 +72,7 @@ object Updater : KoinComponent {
     @OptIn(ExperimentalTime::class)
     @Throws(ResponseException::class, NoSuchElementException::class, SerializationException::class)
     private suspend fun getPrerelease(): GithubRelease {
-        // https://api.github.com/repos/knighthat/Kreate/releases
+        // https://api.github.com/repos/serassstarry/SeryMusic/releases
         val url = "${Repository.GITHUB_API}/repos/${Repository.REPO}/releases"
 
         return client.get( url )
@@ -161,7 +161,7 @@ object Updater : KoinComponent {
             "x86_64"    -> "x86_64"
             else -> throw IllegalStateException("Unknown architecture ${BuildConfig.FLAVOR_arch}")
         }
-        // e.g. Release version will have name 'Kreate-release.apk'
+        // e.g. Release version will have name 'SeryMusic-release.apk'
         return "%s-%s.apk".format(BuildConfig.APP_NAME, suffix)
     }
 }

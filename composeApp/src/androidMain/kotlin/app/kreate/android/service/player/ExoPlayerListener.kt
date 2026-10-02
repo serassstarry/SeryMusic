@@ -13,12 +13,16 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.HttpDataSource
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaSession
 import app.kreate.android.Preferences
 import app.kreate.android.R
 import app.kreate.database.models.PersistentQueue
+import app.kreate.di.clearCachedStreamUrlOf
+import com.metrolist.music.utils.YTPlayerUtils
+import com.metrolist.music.utils.cipher.CipherDeobfuscator
 import it.fast4x.rimusic.Database
 import it.fast4x.rimusic.enums.NotificationButtons
 import it.fast4x.rimusic.enums.QueueLoopType
@@ -58,6 +62,11 @@ class ExoPlayerListener(
     private var volumeNormalizationJob: Job = Job()
     private var errorTimestamp = 0L
     private var lastErrorMessage = ""
+    /**
+     * Number of stream-refresh retries per song, see [tryRecoverRejectedStream].
+     * Only accessed from main thread.
+     */
+    private val streamRetries = mutableMapOf<String, Int>()
 
     var loudnessEnhancer: LoudnessEnhancer? = null
         private set
@@ -171,6 +180,71 @@ class ExoPlayerListener(
             Toaster.e( errMsg, Toast.LENGTH_LONG )
     }
 
+    /**
+     * @return HTTP status code of the first [HttpDataSource.InvalidResponseCodeException]
+     * in [t]'s cause chain, or `null` if there's none.
+     */
+    private fun httpResponseCodeOf( t: Throwable ): Int? {
+        var cause: Throwable? = t
+        while( cause != null ) {
+            if( cause is HttpDataSource.InvalidResponseCodeException )
+                return cause.responseCode
+            cause = cause.cause
+        }
+        return null
+    }
+
+    /**
+     * YouTube rejecting a stream url (403/410) means the url is expired, or was
+     * deciphered with a stale/wrong player config. Mark the main client as failed
+     * for this song so the next resolution falls through to the fallback clients,
+     * drop the cached url, refresh cipher configs, then retry at the same position.
+     *
+     * @return `true` if a retry was scheduled, `false` if error isn't recoverable
+     * or song already used up all retries.
+     */
+    @MainThread
+    private fun tryRecoverRejectedStream( error: PlaybackException ): Boolean {
+        val code = httpResponseCodeOf( error )
+        if( code != 403 && code != 410 ) return false
+        val mediaId = player.currentMediaItem?.mediaId ?: return false
+
+        val attempts = streamRetries[mediaId] ?: 0
+        if( attempts >= MAX_STREAM_RETRIES ) {
+            streamRetries.remove( mediaId )
+            return false
+        }
+        streamRetries[mediaId] = attempts + 1
+
+        YTPlayerUtils.markWebRemixFailed( mediaId )
+        clearCachedStreamUrlOf( mediaId )
+
+        val position = player.currentPosition
+        CoroutineScope( Dispatchers.IO ).launch {
+            // Rate-limited, returns `true` when configs changed. In that case,
+            // previous failures were caused by the old configs, give main client another chance.
+            runCatching {
+                if( CipherDeobfuscator.isInitialized() && CipherDeobfuscator.onStreamRejected() )
+                    YTPlayerUtils.clearWebRemixFailures()
+            }
+
+            withContext( Dispatchers.Main ) {
+                // User may have moved on to another song
+                if( player.currentMediaItem?.mediaId != mediaId ) return@withContext
+
+                player.seekTo( position )
+                player.prepare()
+            }
+        }
+
+        return true
+    }
+
+    override fun onPlaybackStateChanged( playbackState: Int ) {
+        if( playbackState == Player.STATE_READY )
+            player.currentMediaItem?.mediaId?.also( streamRetries::remove )
+    }
+
     override fun onPlayWhenReadyChanged( playWhenReady: Boolean, reason: Int ) = saveQueueToDatabase()
 
     override fun onRepeatModeChanged( repeatMode: Int ) {
@@ -180,6 +254,9 @@ class ExoPlayerListener(
 
     override fun onMediaItemTransition( mediaItem: MediaItem?, reason: Int ) {
         if ( player.playerError != null ) player.prepare()
+
+        // Songs left behind mid-retry never reach STATE_READY, drop their counters
+        streamRetries.keys.retainAll { it == mediaItem?.mediaId }
 
         loadFromRadio(reason)
         onMediaTransition( mediaItem )
@@ -202,6 +279,8 @@ class ExoPlayerListener(
     }
 
     override fun onPlayerError( error: PlaybackException ) {
+        if( tryRecoverRejectedStream( error ) ) return
+
         val rootCause = traverseErrorStack( error )
 
         when( rootCause ) {
@@ -238,3 +317,5 @@ class ExoPlayerListener(
         }
     }
 }
+
+private const val MAX_STREAM_RETRIES = 2

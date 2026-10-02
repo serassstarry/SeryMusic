@@ -19,7 +19,7 @@ class CrashHandler(
 ): Thread.UncaughtExceptionHandler {
 
     companion object {
-        // Kreate_crashlog_2025-8-21_00-00-00.log
+        // SeryMusic_crashlog_2025-8-21_00-00-00.log
         // Also captures the date & time
         val fileNameRegex = Regex("^${BuildConfig.APP_NAME}_crashlog_(\\d{4}-\\d{2}-\\d{2}_[0-2]\\d-[0-5]\\d-[0-5]\\d).log$")
 

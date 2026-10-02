@@ -9,13 +9,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -179,17 +177,6 @@ fun About(
                     // [Icon] overrides vector's color at render time.
                     // Using [Image] to retain original color(s)
                     Image(
-                        painter = painterResource( R.drawable.discord_logo ),
-                        contentDescription = "Discord server",
-                        modifier = Modifier.size( TabToolBar.TOOLBAR_ICON_SIZE )
-                                           .clickable( null, ripple(false) ) {
-                                               uriHandler.openUri( "https://discord.gg/WYr9ZgJzpx" )
-                                           }
-                    )
-
-                    Spacer( Modifier.width( 15.dp ) )
-
-                    Image(
                         painter = painterResource( R.drawable.github_logo ),
                         contentDescription = "Github discussion board",
                         modifier = Modifier.size( TabToolBar.TOOLBAR_ICON_SIZE )
@@ -207,15 +194,6 @@ fun About(
                     subtitle = stringResource( R.string.you_will_be_redirected_to_github ),
                     onClick = {
                         uriHandler.openUri( Repository.REPO_URL )
-                    }
-                )
-            }
-            entry( search, R.string.word_documentation ) {
-                SettingComponents.Text(
-                    title = stringResource( R.string.word_documentation ),
-                    subtitle = stringResource( R.string.opens_link_in_web_browser ),
-                    onClick = {
-                        uriHandler.openUri( "https://kreate.knighthat.me" )
                     }
                 )
             }

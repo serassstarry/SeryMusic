@@ -42,6 +42,9 @@
     <application
         android:name="it.fast4x.rimusic.MainApplication"
         android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:hasFragileUserData="true"
         android:banner="@mipmap/ic_banner"
         android:configChanges="colorMode|density|fontScale|keyboard|keyboardHidden|layoutDirection|locale|mcc|mnc|navigation|orientation|screenLayout|screenSize|smallestScreenSize|touchscreen|uiMode"
         android:hardwareAccelerated="true"

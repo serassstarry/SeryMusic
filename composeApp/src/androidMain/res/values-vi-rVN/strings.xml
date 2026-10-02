@@ -802,7 +802,7 @@
     <string name="dialog_button_dont_report">Không báo cáo</string>
     <string name="error_failed_to_export_logs">Không xuất được nhật ký</string>
     <string name="setting_entry_enable_runtime_log_share">Chia sẻ nhật ký hệ thống</string>
-    <string name="setting_description_runtime_log_share_on">Các chương trình dọc nhật ký khác có thể đọc từ Kreate</string>
+    <string name="setting_description_runtime_log_share_on">Các chương trình dọc nhật ký khác có thể đọc từ SeryMusic</string>
     <string name="setting_description_runtime_log_share_off">Một số dòng nhật ký sẽ bị ẩn khỏi chương trình đọc khác</string>
     <string name="setting_entry_runtime_log_level">Mức độ hiển thị</string>
     <string name="setting_entry_runtime_log_file_count">Số lượng tệp</string>

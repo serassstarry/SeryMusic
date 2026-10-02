@@ -195,9 +195,9 @@ jobs:
     steps:
       # Checkout is placed before reverting keystore because in read
       # GitHub Action env, the repo gets cloned into another folder
-      # i.e /home/runner/work/Kreate/Kreate
+      # i.e /home/runner/work/SeryMusic/SeryMusic
       # Without cloning first, the keystore will be placed in
-      # /home/runner/work/Kreate/.ignore.d/keystores/nightly.jks
+      # /home/runner/work/SeryMusic/.ignore.d/keystores/nightly.jks
       # Which will unintentionally make the build process fail because it
       # can't find the keystore to sign the apk
       - uses: actions/checkout@v7
@@ -252,7 +252,7 @@ jobs:
 
       - name: Get build path
         id: build_path
-        run: echo "path=composeApp/build/outputs/apk/githubUniversalNightly/release/Kreate-nightly.apk" >> $GITHUB_OUTPUT
+        run: echo "path=composeApp/build/outputs/apk/githubUniversalNightly/release/SeryMusic-nightly.apk" >> $GITHUB_OUTPUT
 
       - name: Upload artifact for uploading
         uses: actions/upload-artifact@v7
@@ -297,7 +297,7 @@ jobs:
         if: ${{ !env.ACT }}
         uses: softprops/action-gh-release@v3
         with:
-          files: 'Kreate-nightly.apk'
+          files: 'SeryMusic-nightly.apk'
           # Name: v20250303 | Nightly build
           name: "${{ needs.capture-time.outputs.date }} | Nightly build"
           # Tag name: v2025.03.03
@@ -310,7 +310,7 @@ jobs:
 
             ---
 
-            To download official release, please visit [releases/latest](https://github.com/knighthat/Kreate/releases/latest)
+            To download official release, please visit [releases/latest](https://github.com/serassstarry/SeryMusic/releases/latest)
 
           token: ${{ secrets.RELEASE_TOKEN }}
           generate_release_notes: true
