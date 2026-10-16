@@ -14,12 +14,15 @@ import androidx.media3.common.Player
 import androidx.media3.common.Timeline
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.HttpDataSource
+import androidx.media3.datasource.cache.Cache
 import androidx.media3.exoplayer.source.ShuffleOrder.DefaultShuffleOrder
 import androidx.media3.session.CommandButton
 import androidx.media3.session.MediaSession
 import app.kreate.android.Preferences
 import app.kreate.android.R
 import app.kreate.database.models.PersistentQueue
+import app.kreate.di.CacheType
+import app.kreate.di.CachedFormatMismatchException
 import app.kreate.di.clearCachedStreamUrlOf
 import com.metrolist.music.utils.YTPlayerUtils
 import com.metrolist.music.utils.cipher.CipherDeobfuscator
@@ -58,6 +61,7 @@ class ExoPlayerListener(
 ): Player.Listener, KoinComponent {
 
     private val context: Context by inject()
+    private val playerCache: Cache by inject(CacheType.CACHE)
 
     private var volumeNormalizationJob: Job = Job()
     private var errorTimestamp = 0L
@@ -184,14 +188,56 @@ class ExoPlayerListener(
      * @return HTTP status code of the first [HttpDataSource.InvalidResponseCodeException]
      * in [t]'s cause chain, or `null` if there's none.
      */
-    private fun httpResponseCodeOf( t: Throwable ): Int? {
+    private fun httpResponseCodeOf( t: Throwable ): Int? =
+        causeOf<HttpDataSource.InvalidResponseCodeException>( t )?.responseCode
+
+    private inline fun <reified T: Throwable> causeOf( t: Throwable ): T? {
         var cause: Throwable? = t
         while( cause != null ) {
-            if( cause is HttpDataSource.InvalidResponseCodeException )
-                return cause.responseCode
+            if( cause is T ) return cause
             cause = cause.cause
         }
         return null
+    }
+
+    /**
+     * Cached part of the song belongs to another format than the newly resolved stream,
+     * remove it so the song gets downloaded again from the start, then retry at the same position.
+     *
+     * @return `true` if a retry was scheduled
+     */
+    @MainThread
+    private fun tryRecoverCachedFormatMismatch( error: PlaybackException ): Boolean {
+        val mismatch = causeOf<CachedFormatMismatchException>( error ) ?: return false
+        if( !consumeStreamRetry( mismatch.songId ) ) return false
+
+        val position = player.currentPosition
+        CoroutineScope( Dispatchers.IO ).launch {
+            runCatching { playerCache.removeResource( mismatch.songId ) }
+
+            withContext( Dispatchers.Main ) {
+                if( player.currentMediaItem?.mediaId != mismatch.songId ) return@withContext
+
+                player.seekTo( position )
+                player.prepare()
+            }
+        }
+
+        return true
+    }
+
+    /**
+     * @return `true` if [mediaId] can be retried one more time
+     */
+    @MainThread
+    private fun consumeStreamRetry( mediaId: String ): Boolean {
+        val attempts = streamRetries[mediaId] ?: 0
+        if( attempts >= MAX_STREAM_RETRIES ) {
+            streamRetries.remove( mediaId )
+            return false
+        }
+        streamRetries[mediaId] = attempts + 1
+        return true
     }
 
     /**
@@ -209,12 +255,7 @@ class ExoPlayerListener(
         if( code != 403 && code != 410 ) return false
         val mediaId = player.currentMediaItem?.mediaId ?: return false
 
-        val attempts = streamRetries[mediaId] ?: 0
-        if( attempts >= MAX_STREAM_RETRIES ) {
-            streamRetries.remove( mediaId )
-            return false
-        }
-        streamRetries[mediaId] = attempts + 1
+        if( !consumeStreamRetry( mediaId ) ) return false
 
         YTPlayerUtils.markWebRemixFailed( mediaId )
         clearCachedStreamUrlOf( mediaId )
@@ -279,7 +320,7 @@ class ExoPlayerListener(
     }
 
     override fun onPlayerError( error: PlaybackException ) {
-        if( tryRecoverRejectedStream( error ) ) return
+        if( tryRecoverCachedFormatMismatch( error ) || tryRecoverRejectedStream( error ) ) return
 
         val rootCause = traverseErrorStack( error )
 

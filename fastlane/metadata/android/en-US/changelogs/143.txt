@@ -1,0 +1,4 @@
+Fixes:
+- Songs failing to play after seeking in a partly cached song
+- Songs failing to play when the cached part used another audio format
+- Playback errors with the newest YouTube players

@@ -10,6 +10,8 @@ import androidx.compose.ui.util.fastFilter
 import androidx.core.content.getSystemService
 import androidx.media3.common.C
 import androidx.media3.datasource.DataSpec
+import androidx.media3.datasource.cache.Cache
+import androidx.media3.datasource.cache.ContentMetadata
 import app.kreate.android.Preferences
 import app.kreate.android.R
 import app.kreate.android.utils.CharUtils
@@ -50,6 +52,7 @@ import me.knighthat.innertube.response.PlayerResponse
 import me.knighthat.utils.Toaster
 import org.koin.core.scope.Scope
 import org.koin.java.KoinJavaComponent.get
+import java.io.IOException
 import java.net.UnknownHostException
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.atomics.AtomicReference
@@ -351,12 +354,47 @@ fun Scope.resolveInnertubeMedia( dataSpec: DataSpec ): DataSpec {
     upsertSongInfo( get(), songId )
 
     val cache = getPlayableUrl( songId )
-    val length = cache.format.contentLength ?: C.LENGTH_UNSET.toLong()
+    val contentLength = cache.format.contentLength
+
+    // Part of this song is already cached, upstream only fills in the gaps.
+    // Gaps must come from the same file, splicing 2 formats (e.g. opus & m4a)
+    // into 1 stream breaks playback.
+    val playerCache = get<Cache>(CacheType.CACHE)
+    val cachedLength = ContentMetadata.getContentLength( playerCache.getContentMetadata( songId ) )
+    if( contentLength != null
+        && cachedLength != C.LENGTH_UNSET.toLong()
+        && cachedLength != contentLength
+        && playerCache.getCachedSpans( songId ).isNotEmpty()
+    ) {
+        Logger.withTag( "dataspec" ).w { "Cached data of $songId ($cachedLength bytes) doesn't match format ${cache.format.itag} ($contentLength bytes)" }
+        throw CachedFormatMismatchException( songId )
+    }
+
+    val length = upstreamLength( dataSpec.position, dataSpec.length, contentLength )
     return dataSpec.buildUpon()
                    .setUri(cache.streamUrl)
                    .setLength( length )
                    .build()
 }
+
+/**
+ * [requestedLength] only covers the part that isn't cached yet, it must be kept.
+ * Requesting more makes upstream write over cached data.
+ *
+ * @return number of bytes to request from upstream, starting at [position]
+ */
+internal fun upstreamLength( position: Long, requestedLength: Long, contentLength: Long? ): Long =
+    when {
+        requestedLength != C.LENGTH_UNSET.toLong() -> requestedLength
+        contentLength != null && contentLength > position -> contentLength - position
+        else -> C.LENGTH_UNSET.toLong()
+    }
+
+/**
+ * Cached part of [songId] belongs to another format than the stream url just resolved.
+ * Cache must be cleared and playback restarted, see [app.kreate.android.service.player.ExoPlayerListener].
+ */
+class CachedFormatMismatchException( val songId: String ): IOException("Cached data of $songId belongs to another format")
 
 /**
  * Remove cached url of [songId].

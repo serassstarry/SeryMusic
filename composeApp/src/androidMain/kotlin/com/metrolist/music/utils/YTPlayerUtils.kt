@@ -362,6 +362,8 @@ object YTPlayerUtils : KoinComponent {
                 logger.d("  Reason: useWebPoTokens=${currentClient.useWebPoTokens}, " +
                     "clientInList=${currentClient.clientName in listOf("WEB", "WEB_REMIX", "WEB_CREATOR", "TVHTML5")}")
 
+                // Untransformed n param means the URL gets throttled or rejected
+                var nTransformFailed = false
                 if (needsNTransform) {
                     try {
                         logger.d("Applying n-transform to stream URL...")
@@ -370,6 +372,8 @@ object YTPlayerUtils : KoinComponent {
                         val originalUrl = streamUrl
                         // Use CipherDeobfuscator for n-transform (fixed implementation)
                         streamUrl = CipherDeobfuscator.transformNParamInUrl(streamUrl)
+                        // Transform swallows its own errors and returns the input unchanged
+                        nTransformFailed = streamUrl == originalUrl && Regex("[?&]n=").containsMatchIn(originalUrl)
 
                         logger.d("  Transformed URL length: ${streamUrl.length}")
                         logger.d("  URL changed: ${originalUrl != streamUrl}")
@@ -389,6 +393,7 @@ object YTPlayerUtils : KoinComponent {
                     } catch (e: kotlinx.coroutines.CancellationException) {
                         throw e // request superseded/cancelled — abort cleanly, don't validate an un-transformed URL
                     } catch (e: Exception) {
+                        nTransformFailed = true
                         logger.e("N-transform or pot append failed: ${e.message}", e)
                         logger.e("Stack trace: ${e.stackTraceToString().take(500)}")
                         // Continue with original URL
@@ -452,7 +457,7 @@ object YTPlayerUtils : KoinComponent {
                 // try directly, UNLESS this videoId already 403'd on GET (markWebRemixFailed) — then
                 // fall through to the fallback clients. Saves a validateStatus round-trip per resolve.
                 if (clientIndex == -1 && currentClient.clientName == "WEB_REMIX" &&
-                    !webRemixFailedIds.contains(videoId)
+                    !webRemixFailedIds.contains(videoId) && !nTransformFailed
                 ) {
                     logger.d("WEB_REMIX — skipping HEAD validation, letting ExoPlayer try directly")
                     logger.i("Playback: client=${currentClient.clientName}, videoId=$videoId")
