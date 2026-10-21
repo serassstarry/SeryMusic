@@ -1,0 +1,2 @@
+Fixes:
+- Playback errors with the YouTube players released this week

@@ -105,6 +105,16 @@
         "52d279e1"
       ]
     },
+    "050b1fde": {
+      "sig": "Ga(17,5122,INPUT)",
+      "nClass": "Wh",
+      "sts": 20745,
+      "aliases": [
+        "14c04b7e",
+        "0c08fd03",
+        "b9617b2b"
+      ]
+    },
     "06ab6907": {
       "sig": "vQ(28,4062,INPUT)",
       "nClass": "TW",
@@ -201,6 +211,14 @@
         "7e5f9340"
       ]
     },
+    "0ed38f41": {
+      "sig": "Sx(25,4433,INPUT)",
+      "nClass": "dH",
+      "sts": 20741,
+      "aliases": [
+        "1748cd0b"
+      ]
+    },
     "0fc21ed0": {
       "sig": "m4(17,6228,INPUT)",
       "nClass": "CF",
@@ -239,6 +257,14 @@
       "sts": 20699,
       "aliases": [
         "27a3833a"
+      ]
+    },
+    "108fcbd9": {
+      "sig": "ac(17,1452,INPUT)",
+      "nClass": "hc",
+      "sts": 20746,
+      "aliases": [
+        "8322c252"
       ]
     },
     "1140690d": {
@@ -1046,6 +1072,15 @@
         "21274796"
       ]
     },
+    "4d596e5d": {
+      "sig": "Le(25,1424,INPUT)",
+      "nClass": "qt",
+      "sts": 20742,
+      "aliases": [
+        "83f0e2d1",
+        "ec8a4d33"
+      ]
+    },
     "4d8c79a5": {
       "sig": "IQ(18,3262,INPUT)",
       "nClass": "Dp",
@@ -1101,6 +1136,18 @@
       "sts": 20711,
       "aliases": [
         "086d65d9"
+      ]
+    },
+    "5008be0a": {
+      "sig": "Gl(17,1452,INPUT)",
+      "nClass": "Fl",
+      "sts": 20746,
+      "aliases": [
+        "09451b48",
+        "ec2cfa4d",
+        "a2dd1ed3",
+        "80e27fce",
+        "cbcfbf2f"
       ]
     },
     "50c9b939": {
@@ -1288,6 +1335,14 @@
         "d5e58f95",
         "3c899c93",
         "ee9658aa"
+      ]
+    },
+    "5cfa1694": {
+      "sig": "zl(17,5122,INPUT)",
+      "nClass": "Gx",
+      "sts": 20745,
+      "aliases": [
+        "fa84a16e"
       ]
     },
     "5d46e517": {
@@ -2128,6 +2183,14 @@
         "32477a05"
       ]
     },
+    "922b5303": {
+      "sig": "sa(25,1424,INPUT)",
+      "nClass": "ez",
+      "sts": 20742,
+      "aliases": [
+        "81618434"
+      ]
+    },
     "92b29aca": {
       "sig": "jL(5,5551,INPUT)",
       "nClass": "RJ",
@@ -2265,6 +2328,14 @@
       "sts": 20671,
       "aliases": [
         "ffb8bf19"
+      ]
+    },
+    "96be8342": {
+      "sig": "Ka(17,1452,INPUT)",
+      "nClass": "Ja",
+      "sts": 20746,
+      "aliases": [
+        "a7dc8dd0"
       ]
     },
     "9712d354": {
@@ -2445,6 +2516,14 @@
       "sts": 20665,
       "aliases": [
         "bedf149a"
+      ]
+    },
+    "a0385a48": {
+      "sig": "Le(25,1424,INPUT)",
+      "nClass": "qt",
+      "sts": 20742,
+      "aliases": [
+        "6636507e"
       ]
     },
     "a0ea272e": {
@@ -2727,6 +2806,16 @@
       "sts": 20689,
       "aliases": [
         "fffb9364"
+      ]
+    },
+    "b2368fb0": {
+      "sig": "Ww(25,7059,INPUT)",
+      "nClass": "Vw",
+      "sts": 20744,
+      "aliases": [
+        "938ea829",
+        "67288f35",
+        "e05dbddf"
       ]
     },
     "b2466c24": {
@@ -3519,6 +3608,15 @@
       "sts": 20676,
       "aliases": [
         "9c22ed27"
+      ]
+    },
+    "f00759e4": {
+      "sig": "zl(17,5122,INPUT)",
+      "nClass": "Gx",
+      "sts": 20745,
+      "aliases": [
+        "fd1e678e",
+        "55de7e60"
       ]
     },
     "f0a916b1": {
