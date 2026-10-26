@@ -45,6 +45,13 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.ripple
+import androidx.compose.material.ripple.RippleAlpha
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import app.kreate.android.tv.TvPlayer
+import app.kreate.android.tv.isTvDevice
+import app.kreate.android.tv.tvVerticalFocus
+import it.fast4x.rimusic.enums.NavigationBarPosition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -119,6 +126,7 @@ import it.fast4x.rimusic.service.MyDownloadHelper
 import it.fast4x.rimusic.service.modern.PlayerServiceModern
 import it.fast4x.rimusic.ui.components.CustomModalBottomSheet
 import it.fast4x.rimusic.ui.components.LocalMenuState
+import it.fast4x.rimusic.ui.components.themed.PlayerMenu
 import it.fast4x.rimusic.ui.components.themed.CrossfadeContainer
 import it.fast4x.rimusic.ui.screens.AppNavigation
 import it.fast4x.rimusic.ui.screens.player.MiniPlayer
@@ -603,9 +611,25 @@ MainActivity :
                 }
             }
 
+            val isTv = remember { isTvDevice( this@MainActivity ) }
+            LaunchedEffect( isTv ) {
+                // Once per install on a TV: tabs on the left, where the remote's left arrow
+                // always reaches them (at the bottom they're only reachable at the end of lists)
+                if( isTv && !preferences.getBoolean( TV_DEFAULTS_APPLIED, false ) ) {
+                    Preferences.NAVIGATION_BAR_POSITION.value = NavigationBarPosition.Left
+                    preferences.edit().putBoolean( TV_DEFAULTS_APPLIED, true ).apply()
+                }
+            }
             val rippleConfiguration =
-                remember(appearance.colorPalette.text, appearance.colorPalette.isDark) {
-                    RippleConfiguration(color = appearance.colorPalette.text)
+                remember(appearance.colorPalette.text, appearance.colorPalette.accent, appearance.colorPalette.isDark) {
+                    if( isTv )
+                        // With a remote the focused element must be obvious from the sofa
+                        RippleConfiguration(
+                            color = appearance.colorPalette.accent,
+                            rippleAlpha = RippleAlpha( draggedAlpha = 0.24f, focusedAlpha = 0.5f, hoveredAlpha = 0.12f, pressedAlpha = 0.32f )
+                        )
+                    else
+                        RippleConfiguration(color = appearance.colorPalette.text)
                 }
 
             LaunchedEffect(Unit) {
@@ -635,6 +659,7 @@ MainActivity :
                 modifier = Modifier
                     .fillMaxSize()
                     .background(appearance.colorPalette.background0)
+                    .tvVerticalFocus( isTv )
             ) {
 
 
@@ -771,6 +796,38 @@ MainActivity :
                                 }
                             }
 
+                            if( isTv ) {
+                                // Full screen player made for the remote
+                                if( (switchToAudioPlayer || showPlayer) && !(isVideo && isVideoEnabled) )
+                                    Dialog(
+                                        onDismissRequest = {
+                                            showPlayer = false
+                                            switchToAudioPlayer = false
+                                        },
+                                        properties = DialogProperties(
+                                            usePlatformDefaultWidth = false,
+                                            decorFitsSystemWindows = false
+                                        )
+                                    ) {
+                                        val tvMenuState = LocalMenuState.current
+                                        TvPlayer(
+                                            onMore = { mediaItem ->
+                                                // Opens in its own window, above the TV player
+                                                tvMenuState.display {
+                                                    PlayerMenu(
+                                                        navController = navController,
+                                                        mediaItem = mediaItem,
+                                                        onDismiss = tvMenuState::hide,
+                                                        onClosePlayer = { showPlayer = false }
+                                                    )
+                                                }
+                                            }
+                                        ) {
+                                            showPlayer = false
+                                            switchToAudioPlayer = false
+                                        }
+                                    }
+                            } else
                             PipEventContainer(
                                 enable = true,
                                 onPipOutAction = {
@@ -1056,6 +1113,7 @@ MainActivity :
     }
 
     companion object {
+        private const val TV_DEFAULTS_APPLIED = "tv_defaults_applied"
         const val action_search = "it.fast4x.rimusic.action.search"
         const val action_songs = "it.fast4x.rimusic.action.songs"
         const val action_albums = "it.fast4x.rimusic.action.albums"

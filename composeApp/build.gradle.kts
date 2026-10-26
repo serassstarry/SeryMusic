@@ -191,6 +191,15 @@ android {
                 UNIVERSAL VARIABLES
          */
         buildConfigField( "String", "APP_NAME", "\"$APP_NAME\"" )
+
+        // `-Ptv` builds the APK for Fire TV: its home screen ignores android:banner for apps
+        // not installed from Amazon's store and shows the launcher activity's icon in a wide
+        // tile instead, so there the icon is the 16:9 banner. Phones keep the round icon.
+        val isTvBuild = project.hasProperty( "tv" )
+        manifestPlaceholders["launcherIcon"] = if( isTvBuild ) "@drawable/tv_banner" else "@mipmap/ic_launcher"
+        manifestPlaceholders["launcherRoundIcon"] = if( isTvBuild ) "@drawable/tv_banner" else "@mipmap/ic_launcher_round"
+        // The in-app updater downloads SeryMusic-tv.apk instead of SeryMusic-release.apk
+        buildConfigField( "boolean", "TV_BUILD", isTvBuild.toString() )
     }
 
     namespace = "app.kreate.android"
@@ -366,7 +375,7 @@ android {
                    else
                        buildType.name
 
-                   it.outputFileName = "$APP_NAME-${suffix}.apk"
+                   it.outputFileName = if( project.hasProperty("tv") ) "$APP_NAME-tv.apk" else "$APP_NAME-${suffix}.apk"
                }
 
         if( buildType.name != "debug" ) {

@@ -9,6 +9,7 @@ import co.touchlab.kermit.Severity
 import co.touchlab.kermit.io.RollingFileLogWriter
 import co.touchlab.kermit.io.RollingFileLogWriterConfig
 import co.touchlab.kermit.platformLogWriter
+import android.os.Build
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 
@@ -25,12 +26,20 @@ fun setupLogging( vararg bufferedLoggers: BufferedLogger ) {
         rollOnSize = maxSize,
         maxLogFiles = numFiles
     )
-    val fileWriter = RollingFileLogWriter(
-        config = config,
-        fileSystem = SystemFileSystem
-    )
+    val fileWriter by lazy {
+        RollingFileLogWriter(
+            config = config,
+            fileSystem = SystemFileSystem
+        )
+    }
 
-    Logger.setLogWriters( platformLogWriter(), fileWriter )
+    // Before Android 8 kotlinx-io can't do the atomic move used to roll the log file:
+    // the file writer stopped and every thread that logged afterwards (the player
+    // included) waited forever. There, logs only go to logcat.
+    if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.O )
+        Logger.setLogWriters( platformLogWriter(), fileWriter )
+    else
+        Logger.setLogWriters( platformLogWriter() )
     Logger.setMinSeverity(
         // Override severity when in debug mode
         if( BuildConfig.DEBUG ) Severity.Verbose else severity

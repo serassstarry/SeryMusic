@@ -1,6 +1,7 @@
 name: Release
 
-# Builds SeryMusic-release.apk and publishes it as a GitHub release.
+# Builds SeryMusic-release.apk (phones), SeryMusic-tv.apk (Fire TV / Android TV) and
+# SeryMusic-web.zip (the Python server version in web/), and publishes them as a GitHub release.
 # Triggered by pushing a tag named after `versionName` in gradle/libs.versions.toml,
 # e.g. `v2.2.3`. In-app updater compares that tag with the installed version.
 on:
@@ -24,7 +25,7 @@ jobs:
     env:
       TAG: ${{ inputs.tag || github.ref_name }}
       KEYSTORE_PATH: .ignore.d/keystores/local.keystore
-      APK_PATH: composeApp/build/outputs/apk/githubUniversalProd/release/SeryMusic-release.apk
+      APK_DIR: composeApp/build/outputs/apk/githubUniversalProd/release
 
     steps:
       - uses: actions/checkout@v7
@@ -52,10 +53,21 @@ jobs:
           distribution: "temurin"
           cache: gradle
 
-      - name: Build with Gradle
-        run: ./gradlew assembleGithubUniversalProdRelease
+      - name: Build phone APK
+        run: |
+          ./gradlew assembleGithubUniversalProdRelease
+          mkdir -p dist && cp "$APK_DIR/SeryMusic-release.apk" dist/
+
+      # Same app and signature; only the launcher icon and the file the updater fetches differ
+      - name: Build TV APK
+        run: |
+          ./gradlew assembleGithubUniversalProdRelease -Ptv
+          cp "$APK_DIR/SeryMusic-tv.apk" dist/
+
+      - name: Package web version
+        run: git archive --format=zip --prefix=SeryMusic-web/ -o dist/SeryMusic-web.zip HEAD:web
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$TAG" "$APK_PATH" --title "$TAG" --generate-notes
+        run: gh release create "$TAG" dist/SeryMusic-release.apk dist/SeryMusic-tv.apk dist/SeryMusic-web.zip --title "$TAG" --generate-notes

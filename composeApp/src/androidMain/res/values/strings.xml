@@ -923,4 +923,9 @@
     <string name="setting_entry_auto_backup_disable">Turn off automatic backup</string>
     <string name="word_never">never</string>
     <string name="error_auto_backup_failed">Automatic backup failed: %s</string>
+    <string name="tv_now_playing">Now playing</string>
+    <string name="tv_up_next">Up next: %s</string>
+    <string name="tv_press_to_show">Press any button to show the controls</string>
+    <string name="tv_queue">Queue</string>
+    <string name="tv_more">More options</string>
 </resources>

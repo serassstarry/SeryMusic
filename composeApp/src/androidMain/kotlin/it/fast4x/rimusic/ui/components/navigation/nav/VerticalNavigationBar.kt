@@ -38,6 +38,9 @@ import it.fast4x.rimusic.ui.styling.Dimensions
 import it.fast4x.rimusic.utils.isLandscape
 import it.fast4x.rimusic.utils.semiBold
 import it.fast4x.rimusic.utils.vertical
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
+import app.kreate.android.tv.isTvDevice
 
 // Shown when "Navigation bar position" is set to "left" or "right"
 class VerticalNavigationBar(
@@ -57,6 +60,7 @@ class VerticalNavigationBar(
     override fun add(buttons: @Composable (@Composable (Int, String, Int) -> Unit) -> Unit ) {
         val transition = updateTransition( targetState = tabIndex, label = null )
         val isLandscape: Boolean = isLandscape
+        val isTv = isTvDevice( LocalContext.current )
 
         buttons { index, text, iconId ->
             val textColor by transition.animateColor(label = "") {
@@ -81,9 +85,12 @@ class VerticalNavigationBar(
                             fontWeight = typography().xs.semiBold.fontWeight,
                             color = colorPalette().text,
                         ),
+                        // On TV the rail is wider and each label stays on one line
+                        maxLines = if( isTv ) 1 else Int.MAX_VALUE,
+                        overflow = if( isTv ) TextOverflow.Ellipsis else TextOverflow.Clip,
                         modifier = Modifier.vertical( enabled = !isLandscape )
                                            .rotate(if (isLandscape) 0f else -90f)
-                                           .padding(horizontal = 16.dp)
+                                           .padding(horizontal = if( isTv ) 6.dp else 16.dp)
                     )
             }
 
@@ -183,7 +190,7 @@ class VerticalNavigationBar(
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
-                .width(Dimensions.navigationRailWidth)
+                .width( if( isTvDevice(LocalContext.current) ) 112.dp else Dimensions.navigationRailWidth )
                 .verticalScroll( rememberScrollState() )
         ) {
             val boxPadding: Dp =

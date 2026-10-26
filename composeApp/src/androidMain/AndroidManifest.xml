@@ -63,6 +63,8 @@
 
         <activity
             android:name="it.fast4x.rimusic.MainActivity"
+            android:icon="${launcherIcon}"
+            android:roundIcon="${launcherRoundIcon}"
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.RiMusic"

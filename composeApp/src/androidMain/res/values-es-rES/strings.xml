@@ -923,4 +923,9 @@
     <string name="setting_entry_auto_backup_disable">Desactivar la copia automática</string>
     <string name="word_never">nunca</string>
     <string name="error_auto_backup_failed">La copia de seguridad automática ha fallado: %s</string>
+    <string name="tv_now_playing">Sonando ahora</string>
+    <string name="tv_up_next">A continuación: %s</string>
+    <string name="tv_press_to_show">Pulsa cualquier botón para ver los controles</string>
+    <string name="tv_queue">Cola</string>
+    <string name="tv_more">Más opciones</string>
 </resources>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#09090d">
+  <title>SeryMusic</title>
+  <link rel="icon" href="/static/favicon.png">
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="app">
+    <nav class="sidebar">
+      <div class="brand"><img src="/static/logo.png" alt="" width="40" height="40"><span>SeryMusic</span></div>
+      <a href="#/" data-nav="home"><svg viewBox="0 0 24 24"><path d="M3 11 12 3l9 8v10h-6v-6H9v6H3z"/></svg><span>Inicio</span></a>
+      <a href="#/search" data-nav="search"><svg viewBox="0 0 24 24"><path d="M10 3a7 7 0 0 1 5.6 11.2l5.1 5.1-1.4 1.4-5.1-5.1A7 7 0 1 1 10 3zm0 2a5 5 0 1 0 0 10 5 5 0 0 0 0-10z"/></svg><span>Buscar</span></a>
+      <a href="#/favorites" data-nav="favorites"><svg viewBox="0 0 24 24"><path d="M12 21 3.5 12.6A5.3 5.3 0 0 1 12 6a5.3 5.3 0 0 1 8.5 6.6z"/></svg><span>Favoritos</span></a>
+      <a href="#/playlists" data-nav="playlists"><svg viewBox="0 0 24 24"><path d="M3 5h12v2H3zm0 4h12v2H3zm0 4h8v2H3zm14-8h4v2h-2v9.5a2.5 2.5 0 1 1-2-2.45z"/></svg><span>Playlists</span></a>
+      <form method="post" action="/logout" class="logout" hidden><button type="submit" title="Cerrar sesión"><svg viewBox="0 0 24 24"><path d="M10 3h10v18H10v-2h8V5h-8zm-1 5 1.4 1.4L8.8 11H16v2H8.8l1.6 1.6L9 16l-4-4z"/></svg><span>Salir</span></button></form>
+    </nav>
+
+    <main id="view" class="view" tabindex="-1"></main>
+
+    <aside id="panel" class="panel" hidden>
+      <div class="panel-tabs">
+        <button data-panel="queue">Cola</button>
+        <button data-panel="lyrics">Letra</button>
+        <button class="icon-btn panel-close" id="panel-close" title="Cerrar"><svg viewBox="0 0 24 24"><path d="m6.4 5 5.6 5.6L17.6 5 19 6.4 13.4 12l5.6 5.6-1.4 1.4-5.6-5.6L6.4 19 5 17.6 10.6 12 5 6.4z"/></svg></button>
+      </div>
+      <div id="panel-body" class="panel-body"></div>
+    </aside>
+  </div>
+
+  <footer class="player" id="player">
+    <div class="now">
+      <button class="now-cover" id="now-open" title="Ver en grande"><img id="now-thumb" alt="" width="56" height="56"></button>
+      <div class="now-text"><div id="now-title" class="title">Nada en reproducción</div><div id="now-artist" class="subtitle"></div></div>
+      <button class="icon-btn" id="like" title="Favorito"><svg viewBox="0 0 24 24"><path d="M12 21 3.5 12.6A5.3 5.3 0 0 1 12 6a5.3 5.3 0 0 1 8.5 6.6z"/></svg></button>
+    </div>
+    <div class="controls">
+      <div class="buttons">
+        <button class="icon-btn" id="shuffle" title="Aleatorio"><svg viewBox="0 0 24 24"><path d="M16 3h5v5l-1.8-1.8-4.3 4.3-1.4-1.4 4.3-4.3zM3 5.4 4.4 4l15.4 15.4V16h1.5v5h-5v-1.5h3.4zM10.6 13.4l1.4 1.4-6.6 6.6L4 20z"/></svg></button>
+        <button class="icon-btn" id="prev" title="Anterior"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6L18 18V6z"/></svg></button>
+        <button class="play-btn" id="play" title="Reproducir"><svg viewBox="0 0 24 24" id="play-icon"><path d="M8 5v14l11-7z"/></svg></button>
+        <button class="icon-btn" id="next" title="Siguiente"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+        <button class="icon-btn" id="repeat" title="Repetir"><svg viewBox="0 0 24 24"><path d="M7 7h10v3l4-4-4-4v3H5v6h2zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2z"/></svg><span id="repeat-one" hidden>1</span></button>
+      </div>
+      <div class="seek">
+        <span id="time-current">0:00</span>
+        <input type="range" id="seek" min="0" max="0" step="1" value="0" aria-label="Posición">
+        <span id="time-total">0:00</span>
+      </div>
+    </div>
+    <div class="extra">
+      <button class="icon-btn" id="lyrics-btn" title="Letra"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H7l-3 3zm3 4v2h10V8zm0 3v2h7v-2z"/></svg></button>
+      <button class="icon-btn" id="queue-btn" title="Cola"><svg viewBox="0 0 24 24"><path d="M3 5h14v2H3zm0 4h14v2H3zm0 4h8v2H3zm11 0 7 4-7 4z"/></svg></button>
+      <input type="range" id="volume" min="0" max="1" step="0.01" value="1" aria-label="Volumen">
+    </div>
+    <audio id="audio" preload="auto"></audio>
+  </footer>
+
+  <!-- Now playing, full screen -->
+  <section id="fullplayer" class="fullplayer" hidden aria-label="Reproduciendo ahora">
+    <div class="fp-backdrop" id="fp-backdrop"></div>
+    <header class="fp-top">
+      <button class="icon-btn" id="fp-close" title="Cerrar"><svg viewBox="0 0 24 24"><path d="M7.4 8.6 12 13.2l4.6-4.6L18 10l-6 6-6-6z"/></svg></button>
+      <span>Reproduciendo ahora</span>
+      <button class="icon-btn" id="fp-lyrics" title="Letra"><svg viewBox="0 0 24 24"><path d="M4 4h16v12H7l-3 3zm3 4v2h10V8zm0 3v2h7v-2z"/></svg></button>
+    </header>
+    <div class="fp-body">
+      <img id="fp-cover" class="fp-cover" alt="">
+      <div class="fp-info">
+        <div class="fp-text"><div id="fp-title" class="fp-title"></div><div id="fp-artist" class="fp-artist"></div></div>
+        <button class="icon-btn" id="fp-like" title="Favorito"><svg viewBox="0 0 24 24"><path d="M12 21 3.5 12.6A5.3 5.3 0 0 1 12 6a5.3 5.3 0 0 1 8.5 6.6z"/></svg></button>
+      </div>
+      <div class="seek fp-seek">
+        <span id="fp-current">0:00</span>
+        <input type="range" id="fp-range" min="0" max="0" step="1" value="0" aria-label="Posición">
+        <span id="fp-total">0:00</span>
+      </div>
+      <div class="buttons fp-buttons">
+        <button class="icon-btn" id="fp-shuffle" title="Mezclar"><svg viewBox="0 0 24 24"><path d="M16 3h5v5l-1.8-1.8-4.3 4.3-1.4-1.4 4.3-4.3zM3 5.4 4.4 4l15.4 15.4V16h1.5v5h-5v-1.5h3.4zM10.6 13.4l1.4 1.4-6.6 6.6L4 20z"/></svg></button>
+        <button class="icon-btn" id="fp-prev" title="Anterior"><svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6L18 18V6z"/></svg></button>
+        <button class="play-btn big" id="fp-play" title="Reproducir"><svg viewBox="0 0 24 24"><path id="fp-play-icon" d="M8 5v14l11-7z"/></svg></button>
+        <button class="icon-btn" id="fp-next" title="Siguiente"><svg viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg></button>
+        <button class="icon-btn" id="fp-queue" title="Cola"><svg viewBox="0 0 24 24"><path d="M3 5h14v2H3zm0 4h14v2H3zm0 4h8v2H3zm11 0 7 4-7 4z"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <button id="unlock" class="unlock" hidden>Toca aquí para activar el sonido</button>
+  <div id="menu" class="menu" hidden></div>
+  <div id="toast" class="toast" hidden></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

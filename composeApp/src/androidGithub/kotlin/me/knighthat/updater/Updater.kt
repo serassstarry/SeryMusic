@@ -153,6 +153,9 @@ object Updater : KoinComponent {
         // This condition is different based on the build
         val suffix = if( BuildConfig.FLAVOR_env == "nightly" )
             BuildConfig.FLAVOR_env
+        // TV build (`-Ptv`) has its own APK
+        else if( BuildConfig.TV_BUILD )
+            "tv"
         else when( BuildConfig.FLAVOR_arch ) {
             "universal" -> "release"
             "arm32"     -> "armeabi-v7a"

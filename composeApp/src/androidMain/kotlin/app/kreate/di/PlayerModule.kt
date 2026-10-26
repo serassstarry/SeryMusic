@@ -17,11 +17,16 @@ import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.NoOpCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import androidx.media3.datasource.okhttp.OkHttpDataSource
+import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.audio.AudioSink
+import androidx.media3.exoplayer.audio.DefaultAudioSink
+import androidx.media3.exoplayer.audio.TeeAudioProcessor
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory
 import app.kreate.android.Preferences
 import app.kreate.android.service.DownloadHelper
 import app.kreate.android.service.player.ErrorHandlingPolicy
+import app.kreate.android.service.player.SpectrumTap
 import app.kreate.android.service.player.StatefulPlayer
 import app.kreate.android.service.player.StatefulPlayerImpl
 import app.kreate.android.service.player.VolumeObserver
@@ -145,8 +150,22 @@ val playerModule = module {
             .build()
         //</editor-fold>
 
+        // Same audio path as the default one, plus a copy of the sound for the TV visualizer
+        val renderersFactory = object : DefaultRenderersFactory( get() ) {
+            override fun buildAudioSink(
+                context: Context,
+                enableFloatOutput: Boolean,
+                enableAudioTrackPlaybackParams: Boolean
+            ): AudioSink =
+                DefaultAudioSink.Builder( context )
+                                .setEnableFloatOutput( enableFloatOutput )
+                                .setEnableAudioTrackPlaybackParams( enableAudioTrackPlaybackParams )
+                                .setAudioProcessors( arrayOf(TeeAudioProcessor(SpectrumTap)) )
+                                .build()
+        }
+
         StatefulPlayerImpl(
-            ExoPlayer.Builder( get() )
+            ExoPlayer.Builder( get(), renderersFactory )
                 .setMediaSourceFactory( dataSource )
                 .setHandleAudioBecomingNoisy( true )
                 .setWakeMode( C.WAKE_MODE_NETWORK )

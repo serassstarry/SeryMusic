@@ -1,0 +1,7 @@
+New:
+- TV mode (Fire TV, Android TV): full screen player with a music visualizer, colors from the cover and an ambient mode
+- Clear focus highlight to use the whole app with a TV remote
+- New app icon and TV banner
+
+Fixes:
+- App freezing on Android 7 and older (Fire TV) after the log file filled up

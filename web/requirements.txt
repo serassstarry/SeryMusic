@@ -1,0 +1,9 @@
+flask>=3.0
+waitress>=3.0
+requests>=2.31
+ytmusicapi>=1.10
+# MCP server for AI agents
+mcp>=2.3
+uvicorn>=0.30
+# YouTube changes often, keep this one up to date: pip install -U yt-dlp
+yt-dlp[default]>=2026.8.19

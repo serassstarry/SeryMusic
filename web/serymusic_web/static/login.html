@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0c0c10">
+  <title>SeryMusic</title>
+  <link rel="icon" href="/static/favicon.png">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="login">
+  <form class="login-card" method="post" action="/login">
+    <img src="/static/logo.png" alt="" width="120" height="120">
+    <h1>SeryMusic</h1>
+    <input type="password" name="password" placeholder="Contraseña" autocomplete="current-password" required autofocus>
+    <p class="login-error" id="error" hidden></p>
+    <button type="submit">Entrar</button>
+  </form>
+  <script src="/static/login.js"></script>
+</body>
+</html>

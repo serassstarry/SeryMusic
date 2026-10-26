@@ -8,7 +8,29 @@
 
 # 📥 Download
 
-Builds are published on the [releases page](https://github.com/serassstarry/SeryMusic/releases/latest).
+Builds are published on the [releases page](https://github.com/serassstarry/SeryMusic/releases/latest):
+
+| File | For |
+|---|---|
+| `SeryMusic-release.apk` | Android phones and tablets |
+| `SeryMusic-tv.apk` | Fire TV and Android TV |
+| `SeryMusic-web.zip` | Server version (Python), same as [`web/`](web) |
+
+Both APKs are the same app with the same signature, so either one installs over the other and keeps your data.
+
+# 📺 TV
+
+On a TV (Fire TV, Android TV, Google TV) the app switches to TV mode by itself and is used with the remote only:
+
+- A full screen player with the cover's colors, a spectrum visualizer that follows the music and an ambient mode that hides the controls
+- Queue and song options from the player; hold the center button on any song for its menu
+- Clear focus highlight everywhere, tabs on the left, the TV screensaver stays off while music plays
+
+The TV APK only changes the launcher icon. Fire TV doesn't use `android:banner` for apps installed outside Amazon's store and always shows the icon as a square inside the tile.
+
+# 🌐 Web version
+
+[`web/`](web) has a personal web version that runs on any server with Python, see its [README](web/README.md).
 
 # ✨ Features
 
