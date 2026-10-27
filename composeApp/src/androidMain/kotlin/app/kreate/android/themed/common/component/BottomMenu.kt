@@ -403,6 +403,9 @@ class BottomMenu {
 
             // Button dialog won't show up without this
             buttons.filterIsInstance<Dialog>().forEach { it.Render() }
+            // Delete song/playlist still use the older dialog type; without this
+            // their "Delete" did nothing because the confirmation never appeared
+            buttons.filterIsInstance<it.fast4x.rimusic.ui.components.tab.toolbar.Dialog>().forEach { it.Render() }
 
             // If there's a previous page, go back to it.
             // Otherwise, close the menu.

@@ -20,10 +20,13 @@ abstract class DeleteDialog protected constructor(
         @Composable
         get() = stringResource( messageId )
 
-    override var isActive: Boolean = activeState.value
+    // Menus create a new instance of this dialog on every recomposition, so a field
+    // copied from [activeState] goes stale and "Delete" never showed its dialog.
+    // Reading the state itself keeps every instance in sync and lets Compose observe it.
+    override var isActive: Boolean
+        get() = activeState.value
         set(value) {
             activeState.value = value
-            field = value
         }
 
     override fun onShortClick() = super.onShortClick()

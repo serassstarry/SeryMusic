@@ -5,6 +5,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.stringResource
 import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.cache.Cache
@@ -12,6 +13,7 @@ import app.kreate.android.R
 import app.kreate.android.themed.common.component.BottomMenu
 import app.kreate.di.CacheType
 import it.fast4x.rimusic.Database
+import it.fast4x.rimusic.service.MyDownloadHelper
 import it.fast4x.rimusic.ui.components.tab.toolbar.ConfirmDialog
 import it.fast4x.rimusic.utils.asSong
 import me.knighthat.utils.Toaster
@@ -27,7 +29,7 @@ class DeleteSongButton : MenuButton<MediaItem>(), ConfirmDialog {
     override val tooltipMessageId: Int = R.string.delete
     override val dialogTitle: String
         @Composable
-        get() = title
+        get() = stringResource( R.string.delete_song )
 
     override var isActive: Boolean by mutableStateOf( false )
 
@@ -41,10 +43,10 @@ class DeleteSongButton : MenuButton<MediaItem>(), ConfirmDialog {
     override fun onConfirm() {
         menu.hide()
 
+        // Through the download service, so the song stops being listed as downloaded
+        MyDownloadHelper.removeDownload( song )
         Database.asyncTransaction {
             get<Cache>(Cache::class.java, CacheType.CACHE).removeResource( song.mediaId )
-            // FIXME: This is unsafe, use [DownloadService.sendRemoveDownload] instead
-            get<Cache>(Cache::class.java, CacheType.DOWNLOAD).removeResource( song.mediaId )
             songPlaylistMapTable.deleteBySongId( song.mediaId )
             formatTable.deleteBySongId( song.mediaId )
             songTable.delete( song.asSong )

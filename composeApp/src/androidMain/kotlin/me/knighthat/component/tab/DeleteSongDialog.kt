@@ -11,6 +11,8 @@ import app.kreate.android.R
 import app.kreate.database.models.Song
 import app.kreate.di.CacheType
 import it.fast4x.rimusic.Database
+import it.fast4x.rimusic.service.MyDownloadHelper
+import it.fast4x.rimusic.utils.asMediaItem
 import it.fast4x.rimusic.ui.components.LocalMenuState
 import it.fast4x.rimusic.ui.components.MenuState
 import it.fast4x.rimusic.ui.components.themed.DeleteDialog
@@ -51,11 +53,11 @@ open class DeleteSongDialog(
 
     override fun onConfirm() {
         song.ifPresent {
+            menuState.hide()
+            // Through the download service, so the song stops being listed as downloaded
+            MyDownloadHelper.removeDownload( it.asMediaItem )
             Database.asyncTransaction {
-                menuState.hide()
                 cache.removeResource( it.id )
-                // FIXME: This is unsafe, use [DownloadService.sendRemoveDownload] instead
-                downloadCache.removeResource( it.id )
                 songPlaylistMapTable.deleteBySongId( it.id )
                 formatTable.deleteBySongId( it.id )
                 songTable.delete( it )

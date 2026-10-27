@@ -1,0 +1,3 @@
+Fixes:
+- "Delete" on songs and playlists did nothing: the confirmation never appeared
+- Deleted songs no longer stay marked as downloaded
