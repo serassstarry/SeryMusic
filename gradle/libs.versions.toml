@@ -1,8 +1,8 @@
 
 [versions]
 # App properties
-versionCode = "146"
-versionName = "2.2.8"
+versionCode = "147"
+versionName = "2.2.9"
 compileSdk = "36"
 minSdk = "23"
 

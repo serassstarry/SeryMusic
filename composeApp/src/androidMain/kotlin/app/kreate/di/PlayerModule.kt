@@ -37,6 +37,7 @@ import me.knighthat.innertube.UserAgents
 import okhttp3.OkHttpClient
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.Qualifier
+import org.koin.core.qualifier.named
 import org.koin.core.qualifier.QualifierValue
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -44,6 +45,7 @@ import kotlin.io.path.createTempDirectory
 
 
 const val CHUNK_LENGTH = 512 * 1024L     // 512KB
+const val DOWNLOAD_RESOLVER = "download_resolver"
 
 private const val CACHE_DIRNAME = "exo_cache"
 private const val DOWNLOAD_CACHE_DIRNAME = "exo_downloads"
@@ -107,6 +109,21 @@ val playerModule = module {
                 dataSpec
             else
                 resolveInnertubeMedia( dataSpec )
+        }
+    }
+    // Downloads write to their own cache, the player cache's format doesn't concern them
+    single( named(DOWNLOAD_RESOLVER) ) {
+        ResolvingDataSource.Factory(
+            DefaultDataSource.Factory(
+                get(),
+                OkHttpDataSource.Factory(get<OkHttpClient>())
+                    .setUserAgent( UserAgents.CHROME_WINDOWS )
+            )
+        ) { dataSpec ->
+            if ( dataSpec.uri.isLocalFile() )
+                dataSpec
+            else
+                resolveInnertubeMedia( dataSpec, checkPlayerCache = false )
         }
     }
 

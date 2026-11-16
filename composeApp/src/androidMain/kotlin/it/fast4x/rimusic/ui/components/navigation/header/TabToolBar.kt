@@ -8,6 +8,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -144,10 +145,14 @@ object TabToolBar {
             tint,
             size,
             enabled,
-            modifier.combinedClickable(
-                onClick = onClick,
-                onLongClick = onLongClick
-            ),
+            // Touch lands on the inner icon (click and long click), but the remote focuses
+            // the outer button, which had an empty onClick: on TV these icons did nothing
+            modifier.focusProperties { canFocus = false }
+                    .combinedClickable(
+                        onClick = onClick,
+                        onLongClick = onLongClick
+                    ),
+            onClick = onClick
         )
     }
 

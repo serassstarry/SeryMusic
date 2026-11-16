@@ -1,0 +1,3 @@
+Fixes:
+- Downloads of songs played before could fail when YouTube served another format
+- TV: toolbar buttons (download all, delete downloads...) did nothing with the remote

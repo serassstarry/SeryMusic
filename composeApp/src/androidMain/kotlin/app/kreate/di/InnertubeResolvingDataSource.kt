@@ -345,7 +345,12 @@ private fun getPlayableUrl( songId: String ): YTPlayerUtils.PlaybackData = runBl
 }
 //</editor-fold>
 
-fun Scope.resolveInnertubeMedia( dataSpec: DataSpec ): DataSpec {
+/**
+ * @param checkPlayerCache whether to refuse a stream whose format differs from what the player
+ * cache holds. Only playback reads from that cache; downloads write to their own cache, and
+ * checking there made downloads of songs played before fail whenever YouTube served another format.
+ */
+fun Scope.resolveInnertubeMedia( dataSpec: DataSpec, checkPlayerCache: Boolean = true ): DataSpec {
     val songId = requireNotNull( dataSpec.key ) {
         // This requires all online media to have cache key
         // for caching purpose.
@@ -361,7 +366,8 @@ fun Scope.resolveInnertubeMedia( dataSpec: DataSpec ): DataSpec {
     // into 1 stream breaks playback.
     val playerCache = get<Cache>(CacheType.CACHE)
     val cachedLength = ContentMetadata.getContentLength( playerCache.getContentMetadata( songId ) )
-    if( contentLength != null
+    if( checkPlayerCache
+        && contentLength != null
         && cachedLength != C.LENGTH_UNSET.toLong()
         && cachedLength != contentLength
         && playerCache.getCachedSpans( songId ).isNotEmpty()

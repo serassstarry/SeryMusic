@@ -9,6 +9,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.database.StandaloneDatabaseProvider
 import androidx.media3.datasource.ResolvingDataSource
+import app.kreate.di.DOWNLOAD_RESOLVER
+import org.koin.core.qualifier.named
 import androidx.media3.exoplayer.offline.Download
 import androidx.media3.exoplayer.offline.DownloadManager
 import androidx.media3.exoplayer.offline.DownloadNotificationHelper
@@ -88,7 +90,7 @@ class DownloadHelperImpl(
             context,
             StandaloneDatabaseProvider(context),
             get(CacheType.DOWNLOAD),
-            get<ResolvingDataSource.Factory>(),
+            get<ResolvingDataSource.Factory>( named(DOWNLOAD_RESOLVER) ),
             executor
         )
 
