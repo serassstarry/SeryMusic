@@ -933,4 +933,10 @@
     <string name="lockscreen_player_permission">Permite a SeryMusic mostrarse sobre otras apps para poder enseñar el reproductor al bloquear el móvil</string>
     <string name="lockscreen_unlock">Desbloquear</string>
     <string name="visualizer_description">Muestra la música como barras y ondas en movimiento. Un botón del reproductor cambia entre la portada y el visualizador</string>
+    <string name="local_folders_title">Carpetas de música</string>
+    <string name="local_folders_empty">Elige las carpetas donde tienes tu música. Puedes navegar por todo el móvil, tarjeta SD incluida.</string>
+    <string name="local_folders_choose">Elegir carpeta</string>
+    <string name="local_folders_add">Añadir carpeta</string>
+    <string name="local_folders_removed">Carpeta quitada de la lista</string>
+    <string name="local_folders_no_music">No hay música en esta carpeta</string>
 </resources>

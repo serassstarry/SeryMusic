@@ -190,13 +190,12 @@ val Song.asMediaItem: MediaItem
         )
         .setMediaId( id )
         .setUri(
-            if ( isLocal )
-                ContentUris.withAppendedId(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    id.toLong()
-                )
-            else
-                id.toUri()
+            // Local songs from Android's music index have a numeric id, files from
+            // picked folders use their own content uri as id
+            id.toLongOrNull()
+              ?.takeIf { isLocal }
+              ?.let { ContentUris.withAppendedId( MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, it ) }
+              ?: id.toUri()
         )
         .setCustomCacheKey(
             // `null` cache key (may) prevent media3 from caching the local song

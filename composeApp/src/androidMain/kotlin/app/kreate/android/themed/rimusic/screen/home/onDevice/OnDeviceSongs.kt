@@ -1,28 +1,29 @@
 package app.kreate.android.themed.rimusic.screen.home.onDevice
 
-import android.Manifest
-import android.content.Intent
-import android.content.pm.PackageManager
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.Icons
 import android.net.Uri
-import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -30,36 +31,36 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastMap
-import androidx.core.content.ContextCompat
 import androidx.media3.common.util.UnstableApi
 import androidx.navigation.NavController
 import app.kreate.android.LocalBottomMenu
 import app.kreate.android.Preferences
 import app.kreate.android.R
 import app.kreate.android.constant.MenuPage
+import app.kreate.android.local.LocalFolders
 import app.kreate.android.service.player.StatefulPlayer
 import app.kreate.android.themed.common.component.BottomMenu
 import app.kreate.android.themed.rimusic.component.ItemSelector
 import app.kreate.android.themed.rimusic.component.Search
 import app.kreate.android.themed.rimusic.component.song.SongItem
-import app.kreate.android.themed.rimusic.component.tab.Sort
 import app.kreate.android.utils.shallowCompare
 import app.kreate.database.models.Song
 import it.fast4x.rimusic.colorPalette
 import it.fast4x.rimusic.typography
-import it.fast4x.rimusic.ui.components.LocalMenuState
 import it.fast4x.rimusic.ui.components.SwipeablePlaylistItem
 import it.fast4x.rimusic.ui.components.tab.toolbar.Button
 import it.fast4x.rimusic.ui.styling.Dimensions
@@ -69,15 +70,17 @@ import it.fast4x.rimusic.utils.asMediaItem
 import it.fast4x.rimusic.utils.bold
 import it.fast4x.rimusic.utils.enqueue
 import it.fast4x.rimusic.utils.forcePlayAtIndex
-import it.fast4x.rimusic.utils.isAtLeastAndroid13
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.onEach
 import me.knighthat.component.FolderItem
-import me.knighthat.utils.PathUtils
 import me.knighthat.utils.Toaster
-import me.knighthat.utils.getLocalSongs
 import org.koin.compose.koinInject
 
+/**
+ * Music on the phone, browsed folder by folder. Folders are picked with Android's own
+ * folder picker (any folder, SD card included), so no path has to be typed and songs
+ * show up even when Android's music index doesn't list them.
+ *
+ * Hold a picked folder to remove it from the list.
+ */
 @UnstableApi
 @ExperimentalFoundationApi
 @Composable
@@ -91,143 +94,61 @@ fun OnDeviceSong(
     getSongs: () -> List<Song>,
     menu: BottomMenu = LocalBottomMenu.current
 ) {
-    // Essentials
     val context = LocalContext.current
     val player: StatefulPlayer = koinInject()
     val (colorPalette, typography) = LocalAppearance.current
     val hapticFeedback = LocalHapticFeedback.current
-    val menuState = LocalMenuState.current
-
-    //<editor-fold defaultstate="collapsed" desc="Settings">
     val parentalControlEnabled by Preferences.PARENTAL_CONTROL
-    val showFolder4LocalSongs by Preferences.HOME_SONGS_ON_DEVICE_SHOW_FOLDERS
-    //</editor-fold>
+    val savedFolders by Preferences.LOCAL_MUSIC_FOLDERS
 
-    var songsOnDevice by remember {
-        mutableStateOf( emptyMap<Song, String>() )
+    /** Folders opened, from the picked one to the current one; empty shows the picked folders */
+    val stack = remember { mutableStateListOf<LocalFolders.Entry>() }
+    var roots by remember { mutableStateOf( emptyList<LocalFolders.Entry>() ) }
+    var subfolders by remember { mutableStateOf( emptyList<LocalFolders.Entry>() ) }
+    var songs by remember { mutableStateOf( emptyList<Song>() ) }
+    var isLoading by remember { mutableStateOf( false ) }
+
+    val picker = rememberLauncherForActivityResult( ActivityResultContracts.OpenDocumentTree() ) { tree: Uri? ->
+        tree ?: return@rememberLauncherForActivityResult
+        LocalFolders.add( context, tree )
     }
-    var currentPath by remember( songsOnDevice.values ) {
-        mutableStateOf( PathUtils.findCommonPath( songsOnDevice.values ) )
-    }
+    fun pickFolder() = runCatching { picker.launch( null ) }.onFailure { it.message?.let( Toaster::e ) }
 
-    //<editor-fold defaultstate="collapsed" desc="Permission handler">
-    val permission = rememberSaveable {
-        if( isAtLeastAndroid13 ) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE
-    }
-    var isPermissionGranted by remember { mutableStateOf(
-        ContextCompat.checkSelfPermission( context, permission ) == PackageManager.PERMISSION_GRANTED
-    ) }
-
-    /**
-     * Opens a prompt saying that a permission (should be either [Manifest.permission.READ_MEDIA_AUDIO] or [Manifest.permission.READ_EXTERNAL_STORAGE])
-     * Then apply result of that prompt.
-     */
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { isPermissionGranted = it }
-
-    /**
-     * Starts new activity (should be [Settings.ACTION_APPLICATION_DETAILS_SETTINGS]).
-     * Then wait until user exits the activity, check for permission changes.
-     */
-    val settingsLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        isPermissionGranted = ContextCompat.checkSelfPermission( context, permission ) == PackageManager.PERMISSION_GRANTED
-    }
-    //</editor-fold>
-
-    val odSort = remember {
-        Sort(menuState, Preferences.HOME_ON_DEVICE_SONGS_SORT_BY, Preferences.HOME_SONGS_SORT_ORDER)
+    LaunchedEffect( savedFolders ) {
+        roots = LocalFolders.roots( context )
+        if( stack.isNotEmpty() && roots.none { it.treeUri == stack.first().treeUri } )
+            stack.clear()
     }
 
-    LaunchedEffect( isPermissionGranted, odSort.sortBy, odSort.sortOrder ) {
-        if( !isPermissionGranted ) return@LaunchedEffect
+    // Load what's inside the current folder: subfolders right away, songs as their details are read
+    LaunchedEffect( stack.toList() ) {
+        val folder = stack.lastOrNull()
+        subfolders = emptyList()
+        songs = emptyList()
+        if( folder == null ) return@LaunchedEffect
 
-        context.getLocalSongs( odSort.sortBy, odSort.sortOrder )
-               .distinctUntilChanged()
-               .onEach { lazyListState.scrollToItem( 0, 0 ) }
-               .collect {
-                   songsOnDevice = it
-               }
-    }
-    LaunchedEffect( songsOnDevice, search.input, currentPath ) {
-        songsOnDevice.keys.filter { !parentalControlEnabled || !it.isExplicit }
-                          .filter {
-                              // [showFolder4LocalSongs] must be false and
-                              // this song must be inside [currentPath] to show song
-                              !showFolder4LocalSongs
-                                      || currentPath.equals( songsOnDevice[it], true )
-                                      || "$currentPath/".equals( songsOnDevice[it], true )
-                          }
-                          .filter {
-                              // Without cleaning, user can search explicit songs with "e:"
-                              // I kinda want this to be a feature, but it seems unnecessary
-                              val containsTitle = search appearsIn it.cleanTitle()
-                              val containsArtist = search appearsIn it.cleanArtistsText()
-
-                              containsTitle || containsArtist
-                          }
-                          .let {
-                              itemsOnDisplay.clear()
-                              itemsOnDisplay.addAll( it )
-                          }
-    }
-    LaunchedEffect( Unit ) {
-        buttons.add( 0, odSort )
-
-        if( !isPermissionGranted )
-            try {
-                permissionLauncher.launch( permission )
-            } catch ( e: Exception ) {
-                e.message?.let( Toaster::e )
-            }
-    }
-
-    if( !isPermissionGranted )
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.Lock,
-                    tint = colorPalette().textDisabled,
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxSize( .4f )
-                )
-
-                BasicText(
-                    text = stringResource( R.string.media_permission_required_please_grant ),
-                    style = typography().m.copy( color = colorPalette().textDisabled )
-                )
-
-                Spacer( Modifier.height( 20.dp ) )
-
-                Button(
-                    border = BorderStroke( 2.dp, colorPalette().accent ),
-                    colors = ButtonDefaults.buttonColors().copy( containerColor = Color.Transparent ),
-                    onClick = {
-                        try {
-                            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                data = Uri.fromParts("package", context.packageName, null )
-                            }
-                            settingsLauncher.launch( intent )
-                        } catch ( e: Exception ) {
-                            e.message?.let( Toaster::e )
-                        }
-                    }
-                ) {
-                    BasicText(
-                        text = stringResource( R.string.open_permission_settings ),
-                        style = typography().l.bold.copy( color = colorPalette().accent )
-                    )
-                }
-            }
+        isLoading = true
+        val entries = LocalFolders.children( context, folder )
+        subfolders = entries.filter { it.isFolder }
+        val loaded = mutableListOf<Song>()
+        entries.filter { !it.isFolder }.forEach { file ->
+            loaded += LocalFolders.songOf( context, file )
+            songs = loaded.toList()
         }
+        isLoading = false
+        lazyListState.scrollToItem( 0 )
+    }
+
+    LaunchedEffect( songs, search.input ) {
+        songs.filter { !parentalControlEnabled || !it.isExplicit }
+             .filter { search appearsIn it.cleanTitle() || search appearsIn it.cleanArtistsText() }
+             .let {
+                 itemsOnDisplay.clear()
+                 itemsOnDisplay.addAll( it )
+             }
+    }
+
+    BackHandler( enabled = stack.isNotEmpty() ) { stack.removeAt( stack.lastIndex ) }
 
     val currentMediaItem by player.currentMediaItemState.collectAsState()
     val songItemValues = remember( colorPalette, typography ) {
@@ -236,25 +157,130 @@ fun OnDeviceSong(
 
     LazyColumn(
         state = lazyListState,
-        userScrollEnabled = songsOnDevice.isNotEmpty(),
         contentPadding = PaddingValues( bottom = Dimensions.bottomSpacer )
     ) {
-        if( showFolder4LocalSongs && songsOnDevice.isNotEmpty() ) {
-            item( "folder_paths" ) {
-                PathUtils.AddressBar(
-                    paths = songsOnDevice.values,
-                    currentPath = currentPath,
-                    onSpecificAddressClick = { currentPath = it }
+        if( stack.isEmpty() ) {
+            if( roots.isEmpty() )
+                item( "empty" ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth().padding( horizontal = 32.dp, vertical = 48.dp )
+                    ) {
+                        Icon(
+                            painter = painterResource( R.drawable.folder ),
+                            contentDescription = null,
+                            tint = colorPalette().textDisabled,
+                            modifier = Modifier.size( 72.dp )
+                        )
+                        Spacer( Modifier.height(16.dp) )
+                        BasicText(
+                            text = stringResource( R.string.local_folders_empty ),
+                            style = typography().s.copy( color = colorPalette().textSecondary )
+                        )
+                        Spacer( Modifier.height(24.dp) )
+                        Button(
+                            onClick = ::pickFolder,
+                            border = BorderStroke( 2.dp, colorPalette().accent ),
+                            colors = ButtonDefaults.buttonColors().copy( containerColor = Color.Transparent )
+                        ) {
+                            BasicText(
+                                text = stringResource( R.string.local_folders_choose ),
+                                style = typography().m.bold.copy( color = colorPalette().accent )
+                            )
+                        }
+                    }
+                }
+            else {
+                items( roots, key = { it.treeUri.toString() } ) { root ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy( 12.dp ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip( RoundedCornerShape(10.dp) )
+                            .combinedClickable(
+                                onClick = { stack.add( root ) },
+                                onLongClick = {
+                                    LocalFolders.remove( context, root.treeUri )
+                                    Toaster.i( R.string.local_folders_removed )
+                                }
+                            )
+                            .padding( horizontal = 16.dp, vertical = Dimensions.itemsVerticalPadding )
+                    ) {
+                        Icon(
+                            painter = painterResource( R.drawable.folder ),
+                            contentDescription = null,
+                            tint = colorPalette().text,
+                            modifier = Modifier.size( Dimensions.thumbnails.song )
+                        )
+                        BasicText(
+                            text = root.name,
+                            style = typography().m.copy( color = colorPalette().text )
+                        )
+                    }
+                }
+                item( "add" ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy( 12.dp ),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip( RoundedCornerShape(10.dp) )
+                            .combinedClickable( onClick = ::pickFolder )
+                            .padding( horizontal = 16.dp, vertical = Dimensions.itemsVerticalPadding )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            tint = colorPalette().accent,
+                            modifier = Modifier.size( Dimensions.thumbnails.song )
+                        )
+                        BasicText(
+                            text = stringResource( R.string.local_folders_add ),
+                            style = typography().m.copy( color = colorPalette().accent )
+                        )
+                    }
+                }
+            }
+            return@LazyColumn
+        }
+
+        // Where we are, tap to go back up
+        item( "path" ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .combinedClickable { stack.removeAt( stack.lastIndex ) }
+                    .padding( horizontal = 16.dp, vertical = 10.dp )
+            ) {
+                Icon(
+                    painter = painterResource( R.drawable.chevron_back ),
+                    contentDescription = null,
+                    tint = colorPalette().accent,
+                    modifier = Modifier.size( 20.dp )
+                )
+                Spacer( Modifier.size(8.dp) )
+                BasicText(
+                    text = stack.joinToString( " / " ) { it.name },
+                    style = typography().s.bold.copy( color = colorPalette().text ),
+                    maxLines = 1
                 )
             }
-
-            items(
-                items = PathUtils.getAvailablePaths( songsOnDevice.values, currentPath ),
-                key = { it }
-            ) {
-                FolderItem( it ) { currentPath += "/$it" }
-            }
         }
+
+        items( subfolders, key = { "dir:" + it.documentId } ) { folder ->
+            FolderItem( folder.name ) { stack.add( folder ) }
+        }
+
+        if( !isLoading && subfolders.isEmpty() && songs.isEmpty() )
+            item( "nothing" ) {
+                BasicText(
+                    text = stringResource( R.string.local_folders_no_music ),
+                    style = typography().s.copy( color = colorPalette().textDisabled ),
+                    modifier = Modifier.padding( 24.dp )
+                )
+            }
 
         itemsIndexed(
             items = itemsOnDisplay,
@@ -265,9 +291,7 @@ fun OnDeviceSong(
             SwipeablePlaylistItem(
                 mediaItem = mediaItem,
                 onPlayNext = { player.addNext( mediaItem ) },
-                onEnqueue = {
-                    player.enqueue(mediaItem)
-                }
+                onEnqueue = { player.enqueue( mediaItem ) }
             ) {
                 SongItem.Render(
                     song = song,
@@ -278,7 +302,6 @@ fun OnDeviceSong(
                     modifier = Modifier.animateItem(),
                     onClick = {
                         search.hideIfEmpty()
-
                         player.stopRadio()
 
                         val selectedSongs = getSongs()
@@ -294,8 +317,7 @@ fun OnDeviceSong(
                             )
                     },
                     onLongClick = {
-                        val page = MenuPage.LocalSong(mediaItem)
-                        menu.show( page, true )
+                        menu.show( MenuPage.LocalSong( mediaItem ), true )
                     }
                 )
             }

@@ -1067,6 +1067,10 @@ sealed class Preferences<T>(
         val SMART_REWIND by lazy {
             Float(preferences, Key.SMART_REWIND, "", 3f)
         }
+        /** Folders picked with Android's folder picker, one tree uri per line */
+        val LOCAL_MUSIC_FOLDERS by lazy {
+            String( preferences, Key.LOCAL_MUSIC_FOLDERS, "", "" )
+        }
         val LOCAL_SONGS_FOLDER by lazy {
             String( preferences, Key.LOCAL_SONGS_FOLDER, "defaultFolder", "/" )
         }
@@ -2015,6 +2019,7 @@ sealed class Preferences<T>(
         const val IS_CONNECTION_METERED = "IsConnectionMetered"
         const val SMART_REWIND = "SmartRewind"
         const val LOCAL_SONGS_FOLDER = "LocalSongsFolder"
+        const val LOCAL_MUSIC_FOLDERS = "LocalMusicFolders"
         const val AUTO_BACKUP_FOLDER = "AutoBackupFolder"
         const val AUTO_BACKUP_LAST_RUN = "AutoBackupLastRun"
         const val SEEN_CHANGELOGS_VERSION = "SeenChangelogsVersion"

@@ -1,0 +1,5 @@
+New:
+- On device: choose your music folders with the phone folder picker (SD card included) and browse them folder by folder. No path to type and no storage permission needed
+
+Fixes:
+- On device showed nothing on some phones

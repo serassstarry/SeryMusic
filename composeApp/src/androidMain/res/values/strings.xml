@@ -933,4 +933,10 @@
     <string name="lockscreen_player_permission">Allow SeryMusic to display over other apps, so it can show the player when the phone locks</string>
     <string name="lockscreen_unlock">Unlock</string>
     <string name="visualizer_description">Shows the music as moving bars and waves. A button in the player switches between the cover and the visualizer</string>
+    <string name="local_folders_title">Music folders</string>
+    <string name="local_folders_empty">Choose the folders where you keep your music. You can browse the whole phone, SD card included.</string>
+    <string name="local_folders_choose">Choose folder</string>
+    <string name="local_folders_add">Add folder</string>
+    <string name="local_folders_removed">Folder removed from the list</string>
+    <string name="local_folders_no_music">No music in this folder</string>
 </resources>

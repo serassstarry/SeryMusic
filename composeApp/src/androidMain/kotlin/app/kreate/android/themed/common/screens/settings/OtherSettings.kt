@@ -1,5 +1,6 @@
 package app.kreate.android.themed.common.screens.settings
 
+import app.kreate.android.local.LocalFolders
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.provider.Settings
@@ -119,12 +120,19 @@ fun OtherSettings( paddingValues: PaddingValues ) {
                 visible = Preferences.HOME_SONGS_ON_DEVICE_SHOW_FOLDERS.value,
                 modifier = Modifier.padding( start = 25.dp )
             ) {
-                if( search appearsIn R.string.folder_that_will_show_when_you_open_on_device_page )
-                    SettingComponents.InputDialogEntry(
-                        Preferences.LOCAL_SONGS_FOLDER,
-                        R.string.folder_that_will_show_when_you_open_on_device_page,
-                        InputDialogConstraints.ANDROID_FILE_PATH
+                if( search appearsIn R.string.local_folders_title ) {
+                    // Android's folder picker instead of typing a path
+                    val folders by Preferences.LOCAL_MUSIC_FOLDERS
+                    val picker = rememberLauncherForActivityResult( ActivityResultContracts.OpenDocumentTree() ) { tree ->
+                        if( tree != null ) LocalFolders.add( context, tree )
+                    }
+                    val names = remember( folders ) { LocalFolders.roots( context ).joinToString( ", " ) { it.name } }
+                    SettingComponents.Text(
+                        title = stringResource( R.string.local_folders_title ),
+                        subtitle = names.ifBlank { stringResource( R.string.local_folders_add ) },
+                        onClick = { runCatching { picker.launch( null ) } }
                     )
+                }
             }
 
             header( R.string.androidheadunit )
