@@ -99,6 +99,8 @@ import app.kreate.android.service.player.SpectrumAnalyzer
 import app.kreate.android.service.player.SpectrumTap
 import app.kreate.android.service.player.StatefulPlayer
 import coil3.request.allowHardware
+import coil3.request.error
+import coil3.request.fallback
 import it.fast4x.rimusic.Database
 import it.fast4x.rimusic.utils.DisposableListener
 import it.fast4x.rimusic.utils.positionAndDurationState
@@ -123,9 +125,9 @@ private const val SEEK_STEP_MS = 10_000L
 private const val AMBIENT_AFTER_MS = 12_000L
 
 /** Colors taken from the cover, used by the background, glow and visualizer */
-private data class CoverColors( val main: Color, val second: Color, val dark: Color )
+internal data class CoverColors( val main: Color, val second: Color, val dark: Color )
 
-private val DefaultCoverColors = CoverColors( Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF1E1033) )
+internal val DefaultCoverColors = CoverColors( Color(0xFF8B5CF6), Color(0xFFEC4899), Color(0xFF1E1033) )
 
 /**
  * Full screen player for TVs, made for the remote: big cover over its own
@@ -183,8 +185,8 @@ fun TvPlayer(
     var frame by remember { mutableLongStateOf( 0L ) }
     var bass by remember { mutableFloatStateOf( 0f ) }
     DisposableEffect( Unit ) {
-        SpectrumTap.enabled = true
-        onDispose { SpectrumTap.enabled = false }
+        SpectrumTap.acquire()
+        onDispose { SpectrumTap.release() }
     }
     LaunchedEffect( Unit ) {
         var last = 0L
@@ -413,7 +415,7 @@ private val MediaKeys = setOf(
     Key.MediaFastForward, Key.MediaRewind, Key.MediaStop
 )
 
-private suspend fun coverColors( url: String ): CoverColors? = withContext( Dispatchers.IO ) {
+internal suspend fun coverColors( url: String ): CoverColors? = withContext( Dispatchers.IO ) {
     val bitmap = ImageFactory.bitmap( url ) { allowHardware( false ) }.getOrNull() ?: return@withContext null
     val palette = Palette.from( bitmap ).maximumColorCount( 16 ).generate()
     val main = palette.vibrantSwatch ?: palette.lightVibrantSwatch ?: palette.dominantSwatch ?: return@withContext null
@@ -428,7 +430,7 @@ private suspend fun coverColors( url: String ): CoverColors? = withContext( Disp
 
 /** Blurred cover filling the screen, slowly zooming, with colored light pulsing on the beat */
 @Composable
-private fun Background(
+internal fun Background(
     artwork: String?,
     main: Color,
     second: Color,
@@ -474,7 +476,7 @@ private fun Background(
 }
 
 @Composable
-private fun Cover(
+internal fun Cover(
     artwork: String?,
     side: Dp,
     main: Color,
@@ -508,11 +510,17 @@ private fun Cover(
                 )
             }
     ) {
-        ImageFactory.AsyncImage(
-            thumbnailUrl = artwork,
+        // Songs without cover (often local files) show the app's mascot instead of "no image"
+        coil3.compose.AsyncImage(
+            model = ImageFactory.requestBuilder( artwork ) {
+                error( R.drawable.sery_logo )
+                fallback( R.drawable.sery_logo )
+            },
+            contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
                                .clip( shape )
+                               .background( Color(0xFF0B1230) )
                                .border( 1.dp, Color.White.copy(alpha = 0.15f), shape )
         )
     }
@@ -520,7 +528,7 @@ private fun Cover(
 
 /** Mirrored spectrum bars along the bottom of the screen */
 @Composable
-private fun Visualizer(
+internal fun Visualizer(
     frame: () -> Long,
     levels: SpectrumAnalyzer,
     from: Color,
@@ -613,7 +621,7 @@ private fun ProgressBar(
 
 /** Round button that grows and lights up when the remote focuses it */
 @Composable
-private fun TvButton(
+internal fun TvButton(
     @DrawableRes icon: Int,
     description: String,
     accent: Color,
@@ -839,7 +847,7 @@ private fun QueuePanel(
 }
 
 @Composable
-private fun Clock( modifier: Modifier ) {
+internal fun Clock( modifier: Modifier ) {
     val time by produceState( "" ) {
         val format = SimpleDateFormat( "HH:mm", Locale.getDefault() )
         while( true ) {
@@ -850,7 +858,7 @@ private fun Clock( modifier: Modifier ) {
     Text( time, color = Color.White.copy(alpha = 0.85f), fontSize = 22.sp, fontWeight = FontWeight.SemiBold, modifier = modifier )
 }
 
-private fun formatTime( ms: Long ): String {
+internal fun formatTime( ms: Long ): String {
     if( ms <= 0 ) return "0:00"
     val total = ms / 1000
     val h = total / 3600

@@ -1,0 +1,6 @@
+New:
+- Player on the lock screen: when you lock the phone while music plays, a full screen player with cover, controls and visualizer (Settings > General > Player)
+- Visualizer no longer needs the microphone permission and is on by default: button in the player bar, 36 styles
+- Local songs without cover show the mascot
+
+Tip: your own music is in Songs > On device, by folders

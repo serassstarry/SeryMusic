@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -86,65 +87,13 @@ fun NextVisualizer( player: StatefulPlayer = koinInject() ) {
 
     if (visualizerEnabled) {
 
-        val permission = Manifest.permission.RECORD_AUDIO
-
-        var relaunchPermission by remember {
-            mutableStateOf(false)
+        // Audio comes from the player itself, no microphone permission needed
+        val visualizerView = remember { VisualizerView(context) }
+        val helper = remember { VisualizerHelper() }
+        DisposableEffect( helper ) {
+            onDispose { helper.release() }
         }
-
-        var hasPermission by remember(isCompositionLaunched()) {
-            mutableStateOf(context.applicationContext.hasPermission(permission))
-        }
-
-        val launcher = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission(),
-            onResult = { hasPermission = it }
-        )
-
-        if (!hasPermission) {
-
-            LaunchedEffect(Unit, relaunchPermission) { launcher.launch(permission) }
-
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(
-                    2.dp,
-                    Alignment.CenterVertically
-                ),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                BasicText(
-                    text = stringResource(R.string.require_mic_permission),
-                    modifier = Modifier.fillMaxWidth(0.75f),
-                    style = typography().xs.semiBold
-                )
-                /*
-                Spacer(modifier = Modifier.height(12.dp))
-                SecondaryTextButton(
-                    text = stringResource(R.string.grant_permission),
-                    onClick = {
-                        relaunchPermission = !relaunchPermission
-                    }
-                )
-                 */
-                Spacer(modifier = Modifier.height(20.dp))
-                SecondaryTextButton(
-                    text = stringResource(R.string.open_permission_settings),
-                    onClick = {
-                        context.startActivity(
-                            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                                setData(Uri.fromParts("package", context.packageName, null))
-                            }
-                        )
-                    }
-                )
-
-            }
-
-        } else {
-
-            val visualizerView = VisualizerView(context)
-            val helper = VisualizerHelper(player.audioSessionId ?: 0)
+        run {
 
             val visualizersList = getVisualizers()
             var currentVisualizer by Preferences.PLAYER_CURRENT_VISUALIZER

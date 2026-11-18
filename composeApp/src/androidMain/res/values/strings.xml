@@ -928,4 +928,9 @@
     <string name="tv_press_to_show">Press any button to show the controls</string>
     <string name="tv_queue">Queue</string>
     <string name="tv_more">More options</string>
+    <string name="lockscreen_player">Player on the lock screen</string>
+    <string name="lockscreen_player_description">When you lock the phone while music plays, show a full screen player with the cover and a visualizer</string>
+    <string name="lockscreen_player_permission">Allow SeryMusic to display over other apps, so it can show the player when the phone locks</string>
+    <string name="lockscreen_unlock">Unlock</string>
+    <string name="visualizer_description">Shows the music as moving bars and waves. A button in the player switches between the cover and the visualizer</string>
 </resources>

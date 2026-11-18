@@ -1,5 +1,6 @@
 package it.fast4x.rimusic.service.modern
 
+import app.kreate.android.lockscreen.LockScreenLauncher
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.WallpaperManager
@@ -117,6 +118,7 @@ class PlayerServiceModern:
     private val cache: Cache by inject(CacheType.CACHE)
     private val discord: Discord by inject()
     private val player: StatefulPlayer by inject()
+    private val lockScreenLauncher by lazy { LockScreenLauncher( this, player ) }
     private val volumeObserver: VolumeObserver by inject()
     private val logger = Logger.withTag( this::class.java.simpleName )
 
@@ -184,6 +186,7 @@ class PlayerServiceModern:
         super.onCreate()
 
         volumeObserver.register()
+        lockScreenLauncher.register()
 
         // Enable Android Auto if disabled, REQUIRE ENABLING DEV MODE IN ANDROID AUTO
         try {
@@ -414,6 +417,7 @@ class PlayerServiceModern:
         runCatching {
             listener.saveQueueToDatabase()
             volumeObserver.unregister()
+            lockScreenLauncher.unregister()
 
             stopService(intent<MyDownloadService>())
             stopService(intent<PlayerServiceModern>())

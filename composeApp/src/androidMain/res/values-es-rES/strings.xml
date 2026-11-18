@@ -928,4 +928,9 @@
     <string name="tv_press_to_show">Pulsa cualquier botón para ver los controles</string>
     <string name="tv_queue">Cola</string>
     <string name="tv_more">Más opciones</string>
+    <string name="lockscreen_player">Reproductor en la pantalla de bloqueo</string>
+    <string name="lockscreen_player_description">Al bloquear el móvil mientras suena música, muestra un reproductor a pantalla completa con la portada y un visualizador</string>
+    <string name="lockscreen_player_permission">Permite a SeryMusic mostrarse sobre otras apps para poder enseñar el reproductor al bloquear el móvil</string>
+    <string name="lockscreen_unlock">Desbloquear</string>
+    <string name="visualizer_description">Muestra la música como barras y ondas en movimiento. Un botón del reproductor cambia entre la portada y el visualizador</string>
 </resources>

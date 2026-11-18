@@ -20,7 +20,7 @@ import kotlin.math.sqrt
  * can draw a real spectrum without asking for the microphone permission
  * that [android.media.audiofx.Visualizer] needs.
  *
- * Does nothing while [enabled] is false.
+ * Does nothing while nobody has called [acquire].
  */
 object SpectrumTap : TeeAudioProcessor.AudioBufferSink {
 
@@ -29,7 +29,13 @@ object SpectrumTap : TeeAudioProcessor.AudioBufferSink {
     /** Audio is copied a bit before it's heard, because of the audio track buffer */
     private const val OUTPUT_LATENCY_MS = 250
 
-    @Volatile var enabled = false
+    private val users = java.util.concurrent.atomic.AtomicInteger( 0 )
+    private val enabled get() = users.get() > 0
+
+    /** Start copying audio; each call needs a matching [release] */
+    fun acquire() { users.incrementAndGet() }
+
+    fun release() { users.updateAndGet { maxOf( 0, it - 1 ) } }
 
     private val ring = FloatArray( RING_SIZE )
     @Volatile private var written = 0L
@@ -78,13 +84,18 @@ object SpectrumTap : TeeAudioProcessor.AudioBufferSink {
      *
      * @return false when no audio arrived lately (paused, buffering or tap not working)
      */
-    fun latest( out: FloatArray ): Boolean {
+    fun latest( out: FloatArray ): Boolean = latest( out, out.size )
+
+    /**
+     * Fills the first [count] items of [out] with the latest samples heard.
+     */
+    fun latest( out: FloatArray, count: Int ): Boolean {
         if( System.nanoTime() - lastWriteNanos > 400_000_000L ) return false
 
         val end = written - sampleRate.toLong() * OUTPUT_LATENCY_MS / 1000
-        val start = end - out.size
+        val start = end - count
         if( start < 0 ) return false
-        for( i in out.indices )
+        for( i in 0 until count )
             out[i] = ring[((start + i) and (RING_SIZE - 1).toLong()).toInt()]
         return true
     }
@@ -130,7 +141,7 @@ class SpectrumAnalyzer( val bandCount: Int, private val fftSize: Int = 1024 ) {
             re[i] = samples[i] * window[i]
             im[i] = 0f
         }
-        fft( re, im )
+        fftInPlace( re, im )
 
         val binHz = SpectrumTap.sampleRate.toFloat() / fftSize
         val minHz = 40f
@@ -165,46 +176,46 @@ class SpectrumAnalyzer( val bandCount: Int, private val fftSize: Int = 1024 ) {
         bass = levels.take( bassBands ).average().toFloat()
         return levels
     }
+}
 
-    /** In-place radix-2 FFT */
-    private fun fft( re: FloatArray, im: FloatArray ) {
-        val n = re.size
-        var j = 0
-        for( i in 1 until n ) {
-            var bit = n shr 1
-            while( j and bit != 0 ) {
-                j = j xor bit
-                bit = bit shr 1
-            }
+/** In-place radix-2 FFT, [re] and [im] sizes must be the same power of 2 */
+fun fftInPlace( re: FloatArray, im: FloatArray ) {
+    val n = re.size
+    var j = 0
+    for( i in 1 until n ) {
+        var bit = n shr 1
+        while( j and bit != 0 ) {
             j = j xor bit
-            if( i < j ) {
-                re[i] = re[j].also { re[j] = re[i] }
-                im[i] = im[j].also { im[j] = im[i] }
+            bit = bit shr 1
+        }
+        j = j xor bit
+        if( i < j ) {
+            re[i] = re[j].also { re[j] = re[i] }
+            im[i] = im[j].also { im[j] = im[i] }
+        }
+    }
+    var len = 2
+    while( len <= n ) {
+        val angle = -2 * PI / len
+        val wRe = cos( angle ).toFloat()
+        val wIm = sin( angle ).toFloat()
+        for( i in 0 until n step len ) {
+            var curRe = 1f
+            var curIm = 0f
+            for( k in 0 until len / 2 ) {
+                val a = i + k
+                val b = a + len / 2
+                val tRe = re[b] * curRe - im[b] * curIm
+                val tIm = re[b] * curIm + im[b] * curRe
+                re[b] = re[a] - tRe
+                im[b] = im[a] - tIm
+                re[a] += tRe
+                im[a] += tIm
+                val nextRe = curRe * wRe - curIm * wIm
+                curIm = curRe * wIm + curIm * wRe
+                curRe = nextRe
             }
         }
-        var len = 2
-        while( len <= n ) {
-            val angle = -2 * PI / len
-            val wRe = cos( angle ).toFloat()
-            val wIm = sin( angle ).toFloat()
-            for( i in 0 until n step len ) {
-                var curRe = 1f
-                var curIm = 0f
-                for( k in 0 until len / 2 ) {
-                    val a = i + k
-                    val b = a + len / 2
-                    val tRe = re[b] * curRe - im[b] * curIm
-                    val tIm = re[b] * curIm + im[b] * curRe
-                    re[b] = re[a] - tRe
-                    im[b] = im[a] - tIm
-                    re[a] += tRe
-                    im[a] += tIm
-                    val nextRe = curRe * wRe - curIm * wIm
-                    curIm = curRe * wIm + curIm * wRe
-                    curRe = nextRe
-                }
-            }
-            len = len shl 1
-        }
+        len = len shl 1
     }
 }

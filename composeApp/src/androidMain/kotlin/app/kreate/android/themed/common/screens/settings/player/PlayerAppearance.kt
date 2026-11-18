@@ -793,7 +793,7 @@ fun LazyListScope.playerAppearanceSection( search: SettingEntrySearch, isLandsca
         SettingComponents.BooleanEntry(
             preference = Preferences.PLAYER_VISUALIZER,
             titleId = R.string.visualizer,
-            subtitleId = R.string.visualizer_require_mic_permission
+            subtitleId = R.string.visualizer_description
         )
     }
 }

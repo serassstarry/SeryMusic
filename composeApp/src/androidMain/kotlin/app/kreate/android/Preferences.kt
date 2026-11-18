@@ -423,6 +423,9 @@ sealed class Preferences<T>(
         val PLAYER_KEEP_MINIMIZED by lazy {
             Boolean( preferences, Key.PLAYER_KEEP_MINIMIZED, "keepPlayerMinimized", false )
         }
+        val LOCKSCREEN_PLAYER by lazy {
+            Boolean( preferences, Key.LOCKSCREEN_PLAYER, "", false )
+        }
         val PLAYER_BACKGROUND_BLUR by lazy {
             Boolean( preferences, Key.PLAYER_BACKGROUND_BLUR, "noblur", true )
         }
@@ -1807,6 +1810,7 @@ sealed class Preferences<T>(
         const val PLAYER_SHOW_THUMBNAIL_ON_VISUALIZER = "PlayerShowThumbnailOnVisualizer"
         const val PLAYER_SHRINK_THUMBNAIL_ON_PAUSE = "PlayerShrinkThumbnailOnPause"
         const val PLAYER_KEEP_MINIMIZED = "PlayerKeepMinimized"
+        const val LOCKSCREEN_PLAYER = "LockScreenPlayer"
         const val PLAYER_BACKGROUND_BLUR = "PlayerBackgroundBlur"
         const val PLAYER_BACKGROUND_BLUR_STRENGTH = "PlayerBackgroundBlurStrength"
         const val PLAYER_BACKGROUND_BACK_DROP = "PlayerBackgroundBackDrop"

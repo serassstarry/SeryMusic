@@ -1,5 +1,8 @@
 package app.kreate.android.themed.common.screens.settings.general
 
+import androidx.compose.ui.platform.LocalContext
+import app.kreate.android.lockscreen.LockScreenLauncher
+import me.knighthat.utils.Toaster
 import android.os.Build
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
@@ -111,6 +114,20 @@ fun LazyListScope.playerSettingsSection( search: SettingEntrySearch ) {
             titleId = R.string.effect_fade_audio,
             subtitleId = R.string.effect_fade_audio_description
         )
+    }
+    entry( search, R.string.lockscreen_player ) {
+        val context = LocalContext.current
+        SettingComponents.BooleanEntry(
+            Preferences.LOCKSCREEN_PLAYER,
+            R.string.lockscreen_player,
+            R.string.lockscreen_player_description
+        ) { enabled ->
+            // Android only lets the app open the player over the lock screen with this permission
+            if( enabled && !LockScreenLauncher.hasPermission(context) ) {
+                Toaster.i( R.string.lockscreen_player_permission )
+                context.startActivity( LockScreenLauncher.permissionIntent(context) )
+            }
+        }
     }
     entry( search, R.string.player_keep_minimized ) {
         SettingComponents.BooleanEntry(

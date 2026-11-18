@@ -619,6 +619,12 @@ MainActivity :
                     Preferences.NAVIGATION_BAR_POSITION.value = NavigationBarPosition.Left
                     preferences.edit().putBoolean( TV_DEFAULTS_APPLIED, true ).apply()
                 }
+                // Once per install: the visualizer no longer needs the microphone permission,
+                // so it's on by default (a player button switches between cover and visualizer)
+                if( !preferences.getBoolean( VISUALIZER_DEFAULT_APPLIED, false ) ) {
+                    Preferences.PLAYER_VISUALIZER.value = true
+                    preferences.edit().putBoolean( VISUALIZER_DEFAULT_APPLIED, true ).apply()
+                }
             }
             val rippleConfiguration =
                 remember(appearance.colorPalette.text, appearance.colorPalette.accent, appearance.colorPalette.isDark) {
@@ -1114,6 +1120,7 @@ MainActivity :
 
     companion object {
         private const val TV_DEFAULTS_APPLIED = "tv_defaults_applied"
+        private const val VISUALIZER_DEFAULT_APPLIED = "visualizer_default_applied"
         const val action_search = "it.fast4x.rimusic.action.search"
         const val action_songs = "it.fast4x.rimusic.action.songs"
         const val action_albums = "it.fast4x.rimusic.action.albums"
