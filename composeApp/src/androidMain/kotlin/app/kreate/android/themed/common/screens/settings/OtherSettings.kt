@@ -1,5 +1,7 @@
 package app.kreate.android.themed.common.screens.settings
 
+import it.fast4x.rimusic.typography
+import androidx.compose.foundation.text.BasicText
 import app.kreate.android.local.LocalFolders
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -73,65 +75,35 @@ fun OtherSettings( paddingValues: PaddingValues ) {
             contentPadding = PaddingValues(bottom = Dimensions.bottomSpacer)
         ) {
             header( R.string.on_device )
-            entry( search, R.string.blacklisted_folders ) {
-                var blackListedPaths by remember {
-                    val file = File(context.filesDir, "Blacklisted_paths.txt")
-                    if (file.exists()) {
-                        mutableStateOf(file.readLines())
-                    } else {
-                        mutableStateOf(emptyList())
-                    }
+            // Folders picked with Android's folder picker; their songs show in Songs › On device
+            entry( search, R.string.local_folders_title ) {
+                val folders by Preferences.LOCAL_MUSIC_FOLDERS
+                val picker = rememberLauncherForActivityResult( ActivityResultContracts.OpenDocumentTree() ) { tree ->
+                    if( tree != null ) LocalFolders.add( context, tree )
                 }
-
-                StringListValueSelectorSettingsEntry(
-                    title = stringResource(R.string.blacklisted_folders),
-                    text = stringResource(R.string.edit_blacklist_for_on_device_songs),
-                    addTitle = stringResource(R.string.add_folder),
-                    addPlaceholder = if (isAtLeastAndroid10) {
-                        "Android/media/com.whatsapp/WhatsApp/Media"
-                    } else {
-                        "/storage/emulated/0/Android/media/com.whatsapp/"
-                    },
-                    conflictTitle = stringResource(R.string.this_folder_already_exists),
-                    removeTitle = stringResource(R.string.are_you_sure_you_want_to_remove_this_folder_from_the_blacklist),
-                    context = LocalContext.current,
-                    list = blackListedPaths,
-                    add = { newPath ->
-                        blackListedPaths = blackListedPaths + newPath
-                        val file = File(context.filesDir, "Blacklisted_paths.txt")
-                        file.writeText(blackListedPaths.joinToString("\n"))
-                    },
-                    remove = { path ->
-                        blackListedPaths = blackListedPaths.filter { it != path }
-                        val file = File(context.filesDir, "Blacklisted_paths.txt")
-                        file.writeText(blackListedPaths.joinToString("\n"))
-                    }
-                )
-            }
-            entry( search, R.string.folders ) {
-                SettingComponents.BooleanEntry(
-                    Preferences.HOME_SONGS_ON_DEVICE_SHOW_FOLDERS,
-                    R.string.folders,
-                    R.string.show_folders_in_on_device_page
-                )
-            }
-            animatedEntry(
-                key = "showFolderChildren",
-                visible = Preferences.HOME_SONGS_ON_DEVICE_SHOW_FOLDERS.value,
-                modifier = Modifier.padding( start = 25.dp )
-            ) {
-                if( search appearsIn R.string.local_folders_title ) {
-                    // Android's folder picker instead of typing a path
-                    val folders by Preferences.LOCAL_MUSIC_FOLDERS
-                    val picker = rememberLauncherForActivityResult( ActivityResultContracts.OpenDocumentTree() ) { tree ->
-                        if( tree != null ) LocalFolders.add( context, tree )
-                    }
-                    val names = remember( folders ) { LocalFolders.roots( context ).joinToString( ", " ) { it.name } }
+                val roots = remember( folders ) { LocalFolders.roots( context ) }
+                Column {
                     SettingComponents.Text(
                         title = stringResource( R.string.local_folders_title ),
-                        subtitle = names.ifBlank { stringResource( R.string.local_folders_add ) },
+                        subtitle = stringResource( R.string.local_folders_add ),
                         onClick = { runCatching { picker.launch( null ) } }
                     )
+                    roots.forEach { root ->
+                        SettingComponents.Text(
+                            title = "📁  " + root.name,
+                            subtitle = stringResource( R.string.local_folders_remove ),
+                            onClick = {
+                                LocalFolders.remove( context, root.treeUri )
+                                Toaster.i( R.string.local_folders_removed )
+                            },
+                            trailingContent = {
+                                BasicText(
+                                    text = "✕",
+                                    style = typography().l.copy( color = colorPalette().red )
+                                )
+                            }
+                        )
+                    }
                 }
             }
 

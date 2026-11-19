@@ -11,6 +11,7 @@ import app.kreate.database.models.Song
 import it.fast4x.rimusic.Database
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
@@ -138,6 +139,35 @@ object LocalFolders {
 
         Database.asyncTransaction { songTable.insertIgnore( song ) }
         song
+    }
+
+    /** Songs of all picked folders, filled in while [scan] runs */
+    val songs = kotlinx.coroutines.flow.MutableStateFlow( emptyList<Song>() )
+    val isScanning = kotlinx.coroutines.flow.MutableStateFlow( false )
+    private val scanLock = kotlinx.coroutines.sync.Mutex()
+
+    /**
+     * Reads every picked folder and its subfolders. Songs already known come from the
+     * database, so only new files are opened; the list updates as songs are found.
+     */
+    suspend fun scan( context: Context ) = scanLock.withLock {
+        isScanning.value = true
+        try {
+            val found = mutableListOf<Song>()
+            suspend fun walk( folder: Entry, depth: Int ) {
+                if( depth > 12 ) return
+                val entries = children( context, folder )
+                entries.filter { !it.isFolder }.forEach { file ->
+                    found += songOf( context, file )
+                    if( found.size % 10 == 0 ) songs.value = found.sortedBy { it.title.lowercase() }
+                }
+                entries.filter { it.isFolder }.forEach { walk( it, depth + 1 ) }
+            }
+            roots( context ).forEach { walk( it, 0 ) }
+            songs.value = found.sortedBy { it.title.lowercase() }
+        } finally {
+            isScanning.value = false
+        }
     }
 
     private fun formatDuration( ms: Long ): String =

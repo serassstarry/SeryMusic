@@ -1,0 +1,12 @@
+Added:
+- Sery, the app's chibi mascot, now comes alive: she floats, dances to the music, sends notes out of her headphones and throws hearts when tapped
+- The mascot appears in the player when a song has no cover
+- New app icon
+
+Changed:
+- "On device" shows all the songs of your music folders in one list
+- Music folders are now chosen in Settings > Misc > On device > Music folders
+- The logo in the header dances while music plays
+
+Fixed:
+- Songs page stuck on placeholders with some filters

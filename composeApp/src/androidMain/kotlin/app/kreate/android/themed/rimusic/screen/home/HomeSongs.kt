@@ -206,7 +206,12 @@ fun HomeSongs(
                       .distinctUntilChanged()
                       // Scroll list to top to prevent weird artifacts
                       .onEach { lazyListState.scrollToItem( 0, 0 ) }
-                      .collect { items = it }
+                      .collect {
+                          // Same list as before (e.g. both empty): the filter step below
+                          // won't run again, so it can't turn the placeholders off
+                          if( it == items ) isLoading = false
+                          items = it
+                      }
     }
 
     LaunchedEffect( items, search.input ) {

@@ -934,9 +934,12 @@
     <string name="lockscreen_unlock">Desbloquear</string>
     <string name="visualizer_description">Muestra la música como barras y ondas en movimiento. Un botón del reproductor cambia entre la portada y el visualizador</string>
     <string name="local_folders_title">Carpetas de música</string>
-    <string name="local_folders_empty">Elige las carpetas donde tienes tu música. Puedes navegar por todo el móvil, tarjeta SD incluida.</string>
+    <string name="local_folders_empty">Elige las carpetas donde tienes tu música en Ajustes › Varios › En el dispositivo › Carpetas de música.</string>
     <string name="local_folders_choose">Elegir carpeta</string>
     <string name="local_folders_add">Añadir carpeta</string>
     <string name="local_folders_removed">Carpeta quitada de la lista</string>
-    <string name="local_folders_no_music">No hay música en esta carpeta</string>
+    <string name="local_folders_no_music">No hay música en las carpetas elegidas</string>
+    <string name="local_folders_open_settings">Abrir ajustes</string>
+    <string name="local_folders_scanning">Buscando canciones…</string>
+    <string name="local_folders_remove">Toca para quitar esta carpeta</string>
 </resources>

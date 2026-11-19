@@ -1,6 +1,27 @@
 package it.fast4x.rimusic.ui.components.navigation.header
 
 import android.content.Context
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.media3.common.Player
+import app.kreate.android.service.player.StatefulPlayer
+import it.fast4x.rimusic.utils.DisposableListener
+import kotlinx.coroutines.launch
+import org.koin.compose.koinInject
+import kotlin.math.PI
+import kotlin.math.sin
 import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -70,15 +91,45 @@ private fun AppLogo(
     context: Context
 ) {
     val countToReveal = remember { mutableIntStateOf(0) }
+    val scope = rememberCoroutineScope()
+    val hop = remember { Animatable( 0f ) }
     val modifier = Modifier.combinedClickable(
-        onClick = { appIconClickAction( navController, countToReveal, context ) },
+        onClick = {
+            appIconClickAction( navController, countToReveal, context )
+            scope.launch {
+                hop.animateTo( 1f, tween(140) )
+                hop.animateTo( 0f, spring(dampingRatio = 0.3f, stiffness = 500f) )
+            }
+        },
         onLongClick = { appIconLongClickAction( navController, context ) }
     )
+
+    // Sery bobs her head while music plays
+    val player: StatefulPlayer = koinInject()
+    var isPlaying by remember { mutableStateOf( player.isPlaying ) }
+    player.DisposableListener {
+        object : Player.Listener {
+            override fun onIsPlayingChanged( playing: Boolean ) { isPlaying = playing }
+        }
+    }
+    val dance = rememberInfiniteTransition( label = "logo" )
+    val beat by dance.animateFloat( 0f, 1f, infiniteRepeatable(tween(860, easing = LinearEasing)), label = "beat" )
+    val amount by animateFloatAsState( if( isPlaying ) 1f else 0f, tween(600), label = "amount" )
 
     Image(
         bitmap = AppIcon.Round.imageBitmap( LocalContext.current ),
         contentDescription = "App's icon",
-        modifier = modifier.size( 36.dp )
+        modifier = modifier
+            .size( 36.dp )
+            .graphicsLayer {
+                val wave = sin( beat * 2 * PI ).toFloat()
+                rotationZ = wave * 9f * amount + hop.value * -14f
+                translationY = (-kotlin.math.abs( wave ) * 2.5f * amount - hop.value * 6f) * density
+                val pump = 1f + kotlin.math.abs( wave ) * 0.05f * amount + hop.value * 0.12f
+                scaleX = pump
+                scaleY = pump
+                transformOrigin = TransformOrigin( 0.5f, 0.9f )
+            }
     )
 }
 

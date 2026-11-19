@@ -57,7 +57,8 @@ object ImageFactory : KoinComponent {
                     .diskCacheKey( thumbnailUrl )
                     .placeholder( R.drawable.loader )
                     .error( R.drawable.noimage )
-                    .fallback( R.drawable.image )
+                    // Songs without cover at all (often local files) get the mascot
+                    .fallback( R.drawable.sery_mascot )
                     .apply( builder )
                     .build()
 

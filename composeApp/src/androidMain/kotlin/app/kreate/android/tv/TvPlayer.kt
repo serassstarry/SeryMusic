@@ -95,12 +95,11 @@ import androidx.palette.graphics.Palette
 import app.kreate.android.R
 import app.kreate.android.coil3.BlurTransformation
 import app.kreate.android.coil3.ImageFactory
+import app.kreate.android.mascot.SeryMascot
 import app.kreate.android.service.player.SpectrumAnalyzer
 import app.kreate.android.service.player.SpectrumTap
 import app.kreate.android.service.player.StatefulPlayer
 import coil3.request.allowHardware
-import coil3.request.error
-import coil3.request.fallback
 import it.fast4x.rimusic.Database
 import it.fast4x.rimusic.utils.DisposableListener
 import it.fast4x.rimusic.utils.positionAndDurationState
@@ -510,19 +509,28 @@ internal fun Cover(
                 )
             }
     ) {
-        // Songs without cover (often local files) show the app's mascot instead of "no image"
-        coil3.compose.AsyncImage(
-            model = ImageFactory.requestBuilder( artwork ) {
-                error( R.drawable.sery_logo )
-                fallback( R.drawable.sery_logo )
-            },
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-                               .clip( shape )
-                               .background( Color(0xFF0B1230) )
-                               .border( 1.dp, Color.White.copy(alpha = 0.15f), shape )
-        )
+        // Songs without cover (often local files) get Sery instead, alive and dancing
+        var noCover by remember( artwork ) { mutableStateOf( artwork.isNullOrBlank() || artwork == "null" ) }
+        if( !noCover )
+            coil3.compose.AsyncImage(
+                model = ImageFactory.requestBuilder( artwork ),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                onError = { noCover = true },
+                modifier = Modifier.fillMaxSize()
+                                   .clip( shape )
+                                   .background( Color(0xFF0B1230) )
+                                   .border( 1.dp, Color.White.copy(alpha = 0.15f), shape )
+            )
+        else
+            SeryMascot(
+                playing = isPlaying,
+                accent = lerp( main, Color.White, 0.35f ),
+                accent2 = lerp( second, Color.White, 0.35f ),
+                // With a remote she'd only get in the way of the controls
+                interactive = !isTvDevice( LocalView.current.context ),
+                modifier = Modifier.fillMaxSize()
+            )
     }
 }
 
