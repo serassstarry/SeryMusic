@@ -11,6 +11,9 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
+import kotlinx.serialization.json.Json
 import it.fast4x.rimusic.enums.CheckUpdateState
 import it.fast4x.rimusic.utils.isNetworkAvailable
 import kotlinx.coroutines.CoroutineScope
@@ -56,13 +59,24 @@ object Updater : KoinComponent {
      * @throws SerializationException when fails to deserialize response to [GithubRelease]
      */
     @Throws(ResponseException::class, SerializationException::class)
-    private suspend fun getLatestRelease(): GithubRelease {
-        // https://api.github.com/repos/serassstarry/SeryMusic/releases/latest
-        val url = "${Repository.GITHUB_API}/repos/${Repository.LATEST_TAG_URL}"
+    private suspend fun getLatestRelease(): GithubRelease =
+        // `update.json` is attached to every release. It is a plain download, so it isn't
+        // subject to the API's limit of 60 requests per hour per IP, which every device on the
+        // same home network shares. The API is only the fallback (releases without the file).
+        runCatching {
+            // https://github.com/serassstarry/SeryMusic/releases/latest/download/update.json
+            val response = client.get( "${Repository.REPO_URL}/releases/latest/download/update.json" )
+            check( response.status.isSuccess() ) { "HTTP ${response.status}" }
+            val text = response.bodyAsText()
+            updateJson.decodeFromString<GithubRelease>( text )
+        }.getOrElse { e ->
+            Logger.w( e, "Updater" ) { "update.json unavailable, asking the GitHub API" }
+            // https://api.github.com/repos/serassstarry/SeryMusic/releases/latest
+            client.get( "${Repository.GITHUB_API}/repos/${Repository.LATEST_TAG_URL}" )
+                  .body<GithubRelease>()
+        }
 
-        return client.get( url )
-                     .body<GithubRelease>()
-    }
+    private val updateJson = Json { ignoreUnknownKeys = true }
 
     /**
      * @throws ResponseException when occurs while getting response from GitHub

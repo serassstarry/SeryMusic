@@ -67,7 +67,29 @@ jobs:
       - name: Package web version
         run: git archive --format=zip --prefix=SeryMusic-web/ -o dist/SeryMusic-web.zip HEAD:web
 
+      # What the in-app updater reads (instead of the rate-limited GitHub API):
+      # tag plus name, size, sha256 and download link of each APK
+      - name: Write update.json
+        run: |
+          python3 - <<'EOF'
+          import hashlib, json, os
+          tag = os.environ["TAG"]
+          repo = os.environ["GITHUB_REPOSITORY"]
+          assets = []
+          for name in ("SeryMusic-release.apk", "SeryMusic-tv.apk"):
+              path = f"dist/{name}"
+              data = open(path, "rb").read()
+              assets.append({
+                  "name": name,
+                  "size": len(data),
+                  "digest": "sha256:" + hashlib.sha256(data).hexdigest(),
+                  "browser_download_url": f"https://github.com/{repo}/releases/download/{tag}/{name}",
+              })
+          json.dump({"tag_name": tag, "name": tag, "assets": assets}, open("dist/update.json", "w"), indent=2)
+          EOF
+          cat dist/update.json
+
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$TAG" dist/SeryMusic-release.apk dist/SeryMusic-tv.apk dist/SeryMusic-web.zip --title "$TAG" --generate-notes
+        run: gh release create "$TAG" dist/SeryMusic-release.apk dist/SeryMusic-tv.apk dist/SeryMusic-web.zip dist/update.json --title "$TAG" --generate-notes

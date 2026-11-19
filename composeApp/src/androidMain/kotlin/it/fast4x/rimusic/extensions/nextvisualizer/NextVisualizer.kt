@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
@@ -41,6 +42,7 @@ import app.kreate.android.Preferences
 import app.kreate.android.R
 import app.kreate.android.coil3.ImageFactory
 import app.kreate.android.drawable.AppIcon
+import app.kreate.android.mascot.SeryMascot
 import app.kreate.android.service.player.StatefulPlayer
 import coil3.request.allowHardware
 import it.fast4x.rimusic.colorPalette
@@ -74,6 +76,7 @@ import it.fast4x.rimusic.utils.hasPermission
 import it.fast4x.rimusic.utils.isCompositionLaunched
 import it.fast4x.rimusic.utils.resize
 import it.fast4x.rimusic.utils.semiBold
+import it.fast4x.rimusic.utils.shouldBePlaying
 import kotlinx.coroutines.launch
 import me.knighthat.utils.Toaster
 import org.koin.compose.koinInject
@@ -95,14 +98,34 @@ fun NextVisualizer( player: StatefulPlayer = koinInject() ) {
         }
         run {
 
-            val visualizersList = getVisualizers()
+            val painters = getVisualizers()
+            // Last style is Sery dancing to the music, drawn in Compose instead of a painter
+            val styleCount = painters.size + 1
+            val mascotIndex = painters.size
             var currentVisualizer by Preferences.PLAYER_CURRENT_VISUALIZER
-            if (currentVisualizer < 0) currentVisualizer = 0
+            if (currentVisualizer !in 0 until styleCount) currentVisualizer = 0
+
+            var isPlaying by remember { mutableStateOf( player.shouldBePlaying ) }
+            player.DisposableListener {
+                object : Player.Listener {
+                    override fun onPlayWhenReadyChanged( playWhenReady: Boolean, reason: Int ) { isPlaying = player.shouldBePlaying }
+                    override fun onPlaybackStateChanged( playbackState: Int ) { isPlaying = player.shouldBePlaying }
+                }
+            }
 
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
 
+                if( currentVisualizer == mascotIndex )
+                    SeryMascot(
+                        playing = isPlaying,
+                        accent = colorPalette().accent,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding( start = 24.dp, end = 24.dp, top = 12.dp, bottom = 56.dp )
+                    )
+                else
                 AndroidView(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -132,7 +155,7 @@ fun NextVisualizer( player: StatefulPlayer = koinInject() ) {
                          */
                     },
                     update = {
-                        it.setup(helper, visualizersList[currentVisualizer])
+                        it.setup(helper, painters[currentVisualizer])
                     }
 
                 )
@@ -148,8 +171,7 @@ fun NextVisualizer( player: StatefulPlayer = koinInject() ) {
                     ) {
                         IconButton(
                             onClick = {
-                                if (currentVisualizer <= visualizersList.lastIndex) currentVisualizer--
-                                if (currentVisualizer < 0) currentVisualizer = visualizersList.lastIndex
+                                currentVisualizer = if (currentVisualizer > 0) currentVisualizer - 1 else styleCount - 1
                             },
                             icon = R.drawable.arrow_left,
                             color = colorPalette().text,
@@ -158,12 +180,12 @@ fun NextVisualizer( player: StatefulPlayer = koinInject() ) {
                         )
                         
                         BasicText(
-                            text = "${currentVisualizer + 1}/${visualizersList.size}",
+                            text = "${currentVisualizer + 1}/$styleCount",
                             style = typography().xs.semiBold.copy(color = colorPalette().text),
                         )
                         
                         IconButton(
-                            onClick = { if (currentVisualizer < visualizersList.lastIndex) currentVisualizer++ else currentVisualizer = 0 },
+                            onClick = { currentVisualizer = if (currentVisualizer < styleCount - 1) currentVisualizer + 1 else 0 },
                             icon = R.drawable.arrow_right,
                             color = colorPalette().text,
                             modifier = Modifier

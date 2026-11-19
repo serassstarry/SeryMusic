@@ -1,0 +1,5 @@
+Added:
+- Sery dancing to the music is now one of the visualizer styles (the last one)
+
+Fixed:
+- "Check for updates" failing when GitHub's request limit was reached; the app now reads a small update file attached to each release

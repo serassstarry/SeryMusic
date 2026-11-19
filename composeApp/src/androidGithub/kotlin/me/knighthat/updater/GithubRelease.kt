@@ -11,11 +11,11 @@ import kotlin.time.Instant
 
 @Serializable
 data class GithubRelease(
-    val id: UInt,
+    val id: UInt = 0u,
 
-    val name: String,
+    val name: String = "",
 
-    val prerelease: Boolean,
+    val prerelease: Boolean = false,
 
     @SerialName("tag_name")
     val tagName: String,
@@ -25,14 +25,14 @@ data class GithubRelease(
 
     @OptIn(ExperimentalTime::class)
     @SerialName("published_at")
-    val publishedAt: Instant
+    val publishedAt: Instant = Instant.DISTANT_PAST
 ) {
 
     @Serializable
     data class Build(
-        val id: UInt,
+        val id: UInt = 0u,
 
-        val url: String,
+        val url: String = "",
 
         val name: String,
 
@@ -41,7 +41,7 @@ data class GithubRelease(
         val digest: String?,
 
         @SerialName("created_at")
-        val createdAt: String,
+        val createdAt: String = "",
 
         @SerialName("browser_download_url")
         val downloadUrl: String
